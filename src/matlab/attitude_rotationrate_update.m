@@ -6,7 +6,7 @@ function [ q2 ] = attitude_rotationrate_update( q, omega, dt_sec )
 % @param q quaternion at epoch k.
 % @param omega 3x1 constant rotation rate between epoch k and k+1 [rad/s]
 % @param dt_sec time interval between epoch k and k+1 [sec].
-% @return q2 quaternion q at epoch k+1.
+% @return q2 4x1 quaternion q at epoch k+1.
 assert(( (nargin == 3) && (length(q) == 4) && ...
          (length(omega) == 3) && (length(dt_sec) == 1) ), 'Invalid arguments');
 
