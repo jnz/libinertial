@@ -10,18 +10,21 @@
 % @param[in] fastmath true/false boolean. If true, ignore transport rate, coriolis force and Earth rotation rate
 % @return qk1 New 4x1 orientation quaternion for epoch k+1
 %         vel_n_k1 New 3x1 velocity for epoch k+1
-%         dpos_n 3x1 Change in position between epoch k and k+1
+%         dpos_n 3x1 Change (delta) in position (pos) between epoch k and k+1
 %                    Change in ECEF coordinates can be simply computed as:
 %                    dpos_ecef = R_n_to_e*dpos_n;
-%         dvdt_n 3x1 Body acceleration if n-frame [m/s/s]
+%         dvdt_n 3x1 Body acceleration if n-frame [m/s/s] (read as: delta velocity over delta time in n-frame)
 
 function [ qk1, vel_n_k1, dpos_n, dvdt_n ] = strapdown( dt_sec, specific_force_b, omega_b_ib, qk, vel_n_k, latitude_rad, height_m, fastmath )
 assert( ( (length(dt_sec) == 1) && ...
           (length(specific_force_b) == 3) && ...
+          (size(specific_force_b, 1) == 3) && ...
           (length(omega_b_ib) == 3) && ...
+          (size(omega_b_ib, 1) == 3) && ...
           (length(qk) == 4) && ...
           (norm(qk) > 0.99) && (norm(qk) < 1.01) && ...
           (length(vel_n_k) == 3) && ...
+          (size(vel_n_k, 1) == 3) && ...
           (length(latitude_rad) == 1) && ...
           (length(height_m) == 1) && ...
           (latitude_rad > -pi/2) && ...
@@ -85,7 +88,7 @@ end
 
 % update attitude quaternion from epoch k (qk) to epoch k+1 with the
 % (assumed) constant rotation rate omega_b_nb (rad/s) over dt_sec (s):
-qk1 = attitude_rotationrate_update( qk, omega_b_nb, dt_sec );
+qk1 = attitude_rotationrate_update(qk, omega_b_nb, dt_sec);
 
 % Acceleration
 % ------------
@@ -96,35 +99,32 @@ qk1 = attitude_rotationrate_update( qk, omega_b_nb, dt_sec );
 % coriolis force in n-frame (m/s/s)
 f_coriolis_n = -cross(2*omega_n_ie + omega_n_en, vel_n_k);
 
+% Simply integrating the constant force over the time is possible but not
+% completely correct, as the basic assumption is that there is also a constant
+% rotation, so R_b_to_n is constantly changing over time.  Integrating over
+% R_b_to_n(t)*specific_force_b is a bit tricky.  An approximation is to apply a
+% correction term for the rotation of R_b_to_n over dt_sec. See Titterton 2nd
+% ed. p. 326 and Wendel 2nd ed. chapter 3, p. 58.
+% By including the following correction term, we can approx. correct for the
+% constant rotation rate:
+rotation_correction = cross(0.5*omega_b_nb, specific_force_b);
+
 % basic differential equation (Wendel, 2nd ed. equation 3.151):
 % dvdt_n is the acceleration of the body in n-frame (m/s/s). The centrifugal force
 % is assumed to be included in the gravity_n vector:
-
-dvdt_n = R_b_to_n*specific_force_b + f_coriolis_n + gravity_n;
+dvdt_n = R_b_to_n*(specific_force_b + rotation_correction) + ...
+         f_coriolis_n + gravity_n;
 
 % Velocity change
 % ---------------
 
-% Simply integrating dvdt_n over the time is possible (dvdt_n*dt_sec), but not
-% completely correct, as the basic assumption is that there
-% is a constant rotation, so R_b_to_n is constantly changing over time.
-% Integrating over R_b_to_n(t) is a bit tricky.
-% An approximation is to apply a correction term for the rotation
-% of R_b_to_n over dt_sec. See Titterton 2nd ed. p. 326 and
-% Wendel 2nd ed. chapter 3, p. 58.
-rotation_correction = cross(0.5*omega_b_nb*dt_sec, specific_force_b*dt_sec);
-% change in velocity (body relative to earth in n-frame) over dt_sec is:
-dv_n = R_b_to_n * (specific_force_b*dt_sec + rotation_correction) + ...
-       f_coriolis_n*dt_sec + gravity_n*dt_sec;
-
 % the velocity for the next epoch k+1:
-vel_n_k1 = vel_n_k + dv_n;
+vel_n_k1 = vel_n_k + dvdt_n*dt_sec;
 
 % Position change
 % ---------------
 
-% Trapezoid integration
-% change in position in n-frame (meter)
+% Trapezoid integration, change in position in n-frame (meter) is:
 dpos_n = 0.5*dt_sec*(vel_n_k + vel_n_k1);
 
 % In ECEF coordinates:
