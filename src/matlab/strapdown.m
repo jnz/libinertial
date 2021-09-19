@@ -37,9 +37,6 @@ WGS84_omega_rps = 7.2921151467E-5; % Earth rotation rate in rad/s
 WGS84_gravity = 9.81; % Earth gravity in m/s/s
 gravity_n = [0;0;WGS84_gravity]; % gravity (incl. centrifugal force) in n-frame
 
-% Helper variables section
-% <begin helper variables>
-
 % 3x3 rotation matrix (at epoch k) from qk
 R_b_to_n = [ qk(1)*qk(1)+qk(2)*qk(2)-qk(3)*qk(3)-qk(4)*qk(4),  2*(qk(2)*qk(3)-qk(1)*qk(4)),  2*(qk(2)*qk(4)+qk(1)*qk(3))   ; ...
              2*(qk(2)*qk(3)+qk(1)*qk(4)),  qk(1)*qk(1)-qk(2)*qk(2)+qk(3)*qk(3)-qk(4)*qk(4),  2*(qk(3)*qk(4)-qk(1)*qk(2))   ; ...
@@ -54,8 +51,6 @@ if (fastmath == false)
     % Source 2: G. Seeber, Satellite Geodesy, de Gruyter, p. 25 (Eq. 2.41 u. 2.42)
     Rn = WGS84_a*(1 - WGS84_e_squared)/((1-WGS84_e_squared*sin_lat^2)^(1.5)); % North/South radius
     Re = WGS84_a/sqrt(1-WGS84_e_squared*sin_lat^2); % East/West radius
-
-    % </end helper variables>
 
     % the rotation rate required for the strapdown algorithm
     % is not exactly omega_b_ib, as the rotation rate

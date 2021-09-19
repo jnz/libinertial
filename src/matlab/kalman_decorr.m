@@ -28,7 +28,7 @@ assert( ( (size(P,1)==size(P,2) ) && ... % symmetric covariance matrix
 % the size here.
 n_max = 32; % @satisfy{@req{3}}
 m_max = 9;  % @satisfy{@req{3}}
-assert(size(y,1) <= m_max); 
+assert(size(y,1) <= m_max);
 assert(size(x,1) <= n_max);
 
 [G] = chol(R); % G'*G = R
