@@ -51,7 +51,9 @@ if (fastmath == false)
 
     % Source 1: Jan Wendel, Integrierte Navigationssysteme Oldenburg Verlag p. 31 (1st edition)
     % Source 2: G. Seeber, Satellite Geodesy, de Gruyter, p. 25 (Eq. 2.41 u. 2.42)
-    Rn = WGS84_a*(1 - WGS84_e_squared)/((1-WGS84_e_squared*sin_lat^2)^(1.5)); % North/South radius
+    % denom = (1-WGS84_e_squared*sin_lat^2)^(1.5)
+    denom = (1-WGS84_e_squared*sin_lat^2);
+    Rn = WGS84_a*(1 - WGS84_e_squared)/sqrt(denom*denom*denom); % North/South radius
     Re = WGS84_a/sqrt(1-WGS84_e_squared*sin_lat^2); % East/West radius
 
     % the rotation rate required for the strapdown algorithm
@@ -78,8 +80,8 @@ if (fastmath == false)
 
     % <end computation of omega_b_nb>
 else
-    omega_n_ie = [ 0; 0; 0 ];
-    omega_n_en = [ 0; 0; 0 ];
+    omega_n_ie = omega_b_ib*0;
+    omega_n_en = omega_b_ib*0;
     omega_b_nb = omega_b_ib;
 end
 
