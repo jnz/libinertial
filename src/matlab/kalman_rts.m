@@ -1,5 +1,10 @@
 function [x_smooth, P_smooth] = kalman_rts(x_apriori, x_aposteriori, P_apriori, P_aposteriori, phi)
-%KALMAN_RTS Rauch Tung Striebel Smoother.
+%KALMAN_RTS Rauch-Tung-Striebel (RTS) fixed-interval smoothing.
+%
+% After a forward pass regular Kalman filter update with N epochs, run the
+% filter again with a backwards pass.
+% During the forward pass the state vector a-priori and a-posteriori states and
+% covariances are saved for the RTS smoother.
 %
 % n: Number of elements in column state vector
 % N: Number of total epochs
