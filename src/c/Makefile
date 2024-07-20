@@ -3,11 +3,12 @@ CFLAGS = -O2 -Wall -Wdouble-promotion -fno-math-errno
 SOURCES = navtoolbox.c test.c linalg.c
 HEADERS = navtoolbox.h linalg.h
 OUTPUT = navtest
+LDFLAGS = -lm
 
 all: $(OUTPUT)
 
 $(OUTPUT): $(SOURCES)
-	$(CC) $(CFLAGS) $(SOURCES) -o $(OUTPUT) -lm
+	$(CC) $(CFLAGS) $(SOURCES) -o $(OUTPUT) $(LDFLAGS)
 
 run_test: $(OUTPUT)
 	./$(OUTPUT)
@@ -19,9 +20,12 @@ run_test: $(OUTPUT)
 		echo "Test passed"; \
 	fi
 
-.PHONY: analyze
+.PHONY: analyze tidy
 analyze:
-	scan-build $(CC) -fsanitize=address $(CFLAGS) $(SOURCES) -o $(OUTPUT)
+	scan-build $(CC) -fsanitize=address $(CFLAGS) $(SOURCES) -o $(OUTPUT) $(LDFLAGS)
+
+tidy:
+	clang-tidy $(SOURCES) --
 
 format: $(SOURCES) $(HEADERS)
 	clang-format -i $(SOURCES)
