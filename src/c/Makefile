@@ -20,7 +20,7 @@ run_test: $(OUTPUT)
 		echo "Test passed"; \
 	fi
 
-.PHONY: analyze tidy
+.PHONY: analyze tidy format cppcheck clean
 analyze:
 	scan-build -v clang -fsanitize=address $(CFLAGS) $(SOURCES) -o $(OUTPUT) $(LDFLAGS)
 
@@ -30,6 +30,9 @@ tidy:
 format: $(SOURCES) $(HEADERS)
 	clang-format -i $(SOURCES)
 	clang-format -i $(HEADERS)
+
+cppcheck:
+	cppcheck --enable=all --inconclusive --error-exitcode=1 $(SOURCES)
 
 clean:
 	rm -f $(OUTPUT)

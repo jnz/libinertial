@@ -15,9 +15,6 @@
 
 #include "linalg.h"
 #include "navtoolbox.h"
-#ifdef NAVLIB_STDIO
-#include <stdio.h>
-#endif
 
 /******************************************************************************
  * DEFINES
@@ -53,7 +50,7 @@ void nav_roll_pitch_from_accelerometer(const float f[3], float* roll_rad, float*
 }
 
 void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const float yaw_rad,
-                         float R[9])
+                         float R_output[9])
 {
     const float sinr = sinf(roll_rad);
     const float sinp = sinf(pitch_rad);
@@ -61,21 +58,21 @@ void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const floa
     const float cosr = cosf(roll_rad);
     const float cosp = cosf(pitch_rad);
     const float cosy = cosf(yaw_rad);
-    R[0]             = cosp * cosy;
-    R[3]             = sinr * sinp * cosy - cosr * siny;
-    R[6]             = cosr * sinp * cosy + sinr * siny;
-    R[1]             = cosp * siny;
-    R[4]             = sinr * sinp * siny + cosr * cosy;
-    R[7]             = cosr * sinp * siny - sinr * cosy;
-    R[2]             = -sinp;
-    R[5]             = sinr * cosp;
-    R[8]             = cosr * cosp;
+    R_output[0]      = cosp * cosy;
+    R_output[3]      = sinr * sinp * cosy - cosr * siny;
+    R_output[6]      = cosr * sinp * cosy + sinr * siny;
+    R_output[1]      = cosp * siny;
+    R_output[4]      = sinr * sinp * siny + cosr * cosy;
+    R_output[7]      = cosr * sinp * siny - sinr * cosy;
+    R_output[2]      = -sinp;
+    R_output[5]      = sinr * cosp;
+    R_output[8]      = cosr * cosp;
 }
 
+#if 0
 void nav_filter(void)
 {
     /* matmul, matinv */
-#if 0
     matmul("NN",n,m,n,1.0,P,H,0.0,F);       /* Q=H'*P*H+R */
     matmul("TN",m,m,n,1.0,H,F,1.0,Q);
     if (!(info=matinv(Q,m))) {
@@ -84,7 +81,7 @@ void nav_filter(void)
         matmul("NT",n,n,m,-1.0,K,H,1.0,I);  /* Pp=(I-K*H')*P */
         matmul("NN",n,n,n,1.0,I,P,0.0,Pp);
     }
-#endif
 }
+#endif
 
 /* @} */
