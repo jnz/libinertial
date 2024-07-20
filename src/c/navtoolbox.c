@@ -44,11 +44,11 @@ void nav_roll_pitch_from_accelerometer(const float f[3], float* roll_rad, float*
     assert(f);
     if (roll_rad)
     {
-        *roll_rad = atan2(-f[1], -f[2]); /* eq. 5.89 a */
+        *roll_rad = atan2f(-f[1], -f[2]); /* eq. 5.89 a */
     }
     if (pitch_rad)
     {
-        *pitch_rad = atan2(f[0], SQRTF(f[1] * f[1] + f[2] * f[2])); /* eq. 5.89 b */
+        *pitch_rad = atan2f(f[0], SQRTF(f[1] * f[1] + f[2] * f[2])); /* eq. 5.89 b */
     }
 }
 
