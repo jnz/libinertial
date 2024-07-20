@@ -39,9 +39,7 @@
  * FUNCTION BODIES
  ******************************************************************************/
 
-void nav_roll_pitch_from_accelerometer(const float f[3],
-                                       float* roll_rad,
-                                       float* pitch_rad)
+void nav_roll_pitch_from_accelerometer(const float f[3], float* roll_rad, float* pitch_rad)
 {
     assert(f);
     if (roll_rad)
@@ -50,13 +48,11 @@ void nav_roll_pitch_from_accelerometer(const float f[3],
     }
     if (pitch_rad)
     {
-        *pitch_rad = atan2(f[0], SQRTF(f[1]*f[1] + f[2]*f[2])); /* eq. 5.89 b */
+        *pitch_rad = atan2(f[0], SQRTF(f[1] * f[1] + f[2] * f[2])); /* eq. 5.89 b */
     }
 }
 
-void nav_matrix_body2nav(const float roll_rad,
-                         const float pitch_rad,
-                         const float yaw_rad,
+void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const float yaw_rad,
                          float R[9])
 {
     const float sinr = sinf(roll_rad);
@@ -65,9 +61,15 @@ void nav_matrix_body2nav(const float roll_rad,
     const float cosr = cosf(roll_rad);
     const float cosp = cosf(pitch_rad);
     const float cosy = cosf(yaw_rad);
-    R[0] =  cosp*cosy;  R[3] = sinr*sinp*cosy-cosr*siny; R[6] = cosr*sinp*cosy+sinr*siny;
-    R[1] =  cosp*siny;  R[4] = sinr*sinp*siny+cosr*cosy; R[7] = cosr*sinp*siny-sinr*cosy;
-    R[2] = -sinp;       R[5] = sinr*cosp;                R[8] = cosr*cosp;
+    R[0]             = cosp * cosy;
+    R[3]             = sinr * sinp * cosy - cosr * siny;
+    R[6]             = cosr * sinp * cosy + sinr * siny;
+    R[1]             = cosp * siny;
+    R[4]             = sinr * sinp * siny + cosr * cosy;
+    R[7]             = cosr * sinp * siny - sinr * cosy;
+    R[2]             = -sinp;
+    R[5]             = sinr * cosp;
+    R[8]             = cosr * cosp;
 }
 
 void nav_filter(void)
@@ -86,4 +88,3 @@ void nav_filter(void)
 }
 
 /* @} */
-

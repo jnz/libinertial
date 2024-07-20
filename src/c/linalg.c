@@ -33,7 +33,10 @@
  ******************************************************************************/
 
 // inline int min(int a, int b) { return a < b ? a : b; }
-inline int max(int a, int b) { return a > b ? a : b; }
+inline int max(int a, int b)
+{
+    return a > b ? a : b;
+}
 
 /* BLAS/LAPACK routines */
 static int lsame(const char* a, const char* b);
@@ -42,33 +45,34 @@ static int lsame(const char* a, const char* b);
  * FUNCTION BODIES
  ******************************************************************************/
 
-void matmul(const char* ta, const char* tb, int n, int k, int m,
-            float alpha, const float* A,
+void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, const float* A,
             const float* B, float beta, float* C)
 {
-    const int ca = *ta == 'T';
-    const int cb = *tb == 'T';
+    const int ca     = *ta == 'T';
+    const int cb     = *tb == 'T';
     const int branch = (ca << 1) | (cb);
 
-    for (int i=0; i<n; i++)
+    for (int i = 0; i < n; i++)
     {
-        for (int j=0; j<k; j++)
+        for (int j = 0; j < k; j++)
         {
             float s = 0.0f;
             switch (branch)
             {
+            /* clang-format off */
                 case 0: for (int x=0;x<m;x++) { s+=A[i+x*n]*B[x+j*m]; } break; /* N N */
                 case 1: for (int x=0;x<m;x++) { s+=A[i+x*n]*B[j+x*k]; } break; /* N T */
                 case 2: for (int x=0;x<m;x++) { s+=A[x+i*m]*B[x+j*m]; } break; /* T N */
                 case 3: for (int x=0;x<m;x++) { s+=A[x+i*m]*B[j+x*k]; } break; /* T T */
+                /* clang-format on */
             }
-            if (beta==0.0f)
+            if (beta == 0.0f)
             {
-                MAT_ELEM(C,i,j,n,n)=alpha*s;
+                MAT_ELEM(C, i, j, n, n) = alpha * s;
             }
             else
             {
-                MAT_ELEM(C,i,j,n,n)=alpha*s+beta*C[i+j*n];
+                MAT_ELEM(C, i, j, n, n) = alpha * s + beta * C[i + j * n];
             }
         }
     }
@@ -81,32 +85,35 @@ int cholesky(float* A, const int n, int onlyWriteLowerPart)
     /* set the upper triangular part to zero? */
     if (!onlyWriteLowerPart)
     {
-        for (int i=0;i<n-1;i++) /* row */
+        for (int i = 0; i < n - 1; i++) /* row */
         {
-            for (int j=i+1;j<n;j++) /* col */
+            for (int j = i + 1; j < n; j++) /* col */
             {
-                MAT_ELEM(A,i,j,n,n) = 0.0f;
+                MAT_ELEM(A, i, j, n, n) = 0.0f;
             }
         }
     }
 
-    for (int j=0; j<n; j++) /* main loop */
+    for (int j = 0; j < n; j++) /* main loop */
     {
-        const float Ajj = MAT_ELEM(A,j,j,n,n);
-        if (Ajj <= 0.0f || isnan(Ajj)) { return -1; }
-        MAT_ELEM(A,j,j,n,n) = SQRTF(Ajj);
-
-        const float invLjj = 1.0f / MAT_ELEM(A,j,j,n,n);
-        for (int i = j+1; i<n; i++)
+        const float Ajj = MAT_ELEM(A, j, j, n, n);
+        if (Ajj <= 0.0f || isnan(Ajj))
         {
-            MAT_ELEM(A,i,j,n,n) *= invLjj;
+            return -1;
+        }
+        MAT_ELEM(A, j, j, n, n) = SQRTF(Ajj);
+
+        const float invLjj = 1.0f / MAT_ELEM(A, j, j, n, n);
+        for (int i = j + 1; i < n; i++)
+        {
+            MAT_ELEM(A, i, j, n, n) *= invLjj;
         }
 
-        for (int k=j+1;k<n;k++)
+        for (int k = j + 1; k < n; k++)
         {
-            for(int i=k;i<n;i++)
+            for (int i = k; i < n; i++)
             {
-                MAT_ELEM(A,i,k,n,n) -= MAT_ELEM(A,i,j,n,n)*MAT_ELEM(A,k,j,n,n);
+                MAT_ELEM(A, i, k, n, n) -= MAT_ELEM(A, i, j, n, n) * MAT_ELEM(A, k, j, n, n);
             }
         }
     }
@@ -122,19 +129,19 @@ static int lsame(const char* a, const char* b)
     return (tolower(*a) == tolower(*b));
 }
 
-int strsm(const char *side, const char *uplo, const char *transa, const char *diag,
-    int* m, int* n, float* alpha, float* a, int* lda, float *b, int* ldb)
+int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m, int* n,
+          float* alpha, float* a, int* lda, float* b, int* ldb)
 {
     /* System generated locals */
     int a_dim1, a_offset, b_dim1, b_offset, i__1, i__2, i__3;
 
     /* Local variables */
-    int i__, j, k, info;
+    int   i__, j, k, info;
     float temp;
-    int lside;
-    int nrowa;
-    int upper;
-    int nounit;
+    int   lside;
+    int   nrowa;
+    int   upper;
+    int   nounit;
 
     /*     .. Scalar Arguments .. */
     /*     .. */
@@ -239,9 +246,7 @@ int strsm(const char *side, const char *uplo, const char *transa, const char *di
     /*           max( 1, m ). */
     /*           Unchanged on exit. */
 
-
     /*  Level 3 Blas routine. */
-
 
     /*  -- Written on 8-February-1989. */
     /*     Jack Dongarra, Argonne National Laboratory. */
@@ -250,52 +255,75 @@ int strsm(const char *side, const char *uplo, const char *transa, const char *di
     /*     Sven Hammarling, Numerical Algorithms Group Ltd. */
 
     /* Parameter adjustments */
-    a_dim1 = *lda;
+    a_dim1   = *lda;
     a_offset = 1 + a_dim1;
     a -= a_offset;
-    b_dim1 = *ldb;
+    b_dim1   = *ldb;
     b_offset = 1 + b_dim1;
     b -= b_offset;
 
     /* Function Body */
     lside = lsame(side, "L");
-    if (lside) {
+    if (lside)
+    {
         nrowa = *m;
-    } else {
+    }
+    else
+    {
         nrowa = *n;
     }
     nounit = lsame(diag, "N");
-    upper = lsame(uplo, "U");
+    upper  = lsame(uplo, "U");
 
     info = 0;
-    if (! lside && !lsame(side, "R")) {
+    if (!lside && !lsame(side, "R"))
+    {
         info = 1;
-    } else if (! upper && !lsame(uplo, "L")) {
+    }
+    else if (!upper && !lsame(uplo, "L"))
+    {
         info = 2;
-    } else if (! lsame(transa, "N") && !lsame(transa, "T") && !lsame(transa, "C")) {
+    }
+    else if (!lsame(transa, "N") && !lsame(transa, "T") && !lsame(transa, "C"))
+    {
         info = 3;
-    } else if (! lsame(diag, "U") && !lsame(diag, "N")) {
+    }
+    else if (!lsame(diag, "U") && !lsame(diag, "N"))
+    {
         info = 4;
-    } else if (*m < 0) {
+    }
+    else if (*m < 0)
+    {
         info = 5;
-    } else if (*n < 0) {
+    }
+    else if (*n < 0)
+    {
         info = 6;
-    } else if (*lda < max(1,nrowa)) {
+    }
+    else if (*lda < max(1, nrowa))
+    {
         info = 9;
-    } else if (*ldb < max(1,*m)) {
+    }
+    else if (*ldb < max(1, *m))
+    {
         info = 11;
     }
-    if (info != 0) {
+    if (info != 0)
+    {
         return 0;
     }
-    if (*m == 0 || *n == 0) { /*     Quick return if possible. */
+    if (*m == 0 || *n == 0)
+    { /*     Quick return if possible. */
         return 0;
     }
-    if (*alpha == 0.f) { /*     And when  alpha.eq.zero. */
+    if (*alpha == 0.f)
+    { /*     And when  alpha.eq.zero. */
         i__1 = *n;
-        for (j = 1; j <= i__1; ++j) {
+        for (j = 1; j <= i__1; ++j)
+        {
             i__2 = *m;
-            for (i__ = 1; i__ <= i__2; ++i__) {
+            for (i__ = 1; i__ <= i__2; ++i__)
+            {
                 b[i__ + j * b_dim1] = 0.f;
             }
         }
@@ -303,85 +331,115 @@ int strsm(const char *side, const char *uplo, const char *transa, const char *di
     }
 
     /*     Start the operations. */
-    if (lside) {
-        if (lsame(transa, "N")) {
+    if (lside)
+    {
+        if (lsame(transa, "N"))
+        {
             /*           Form  B := alpha*inv( A )*B. */
-            if (upper) {
+            if (upper)
+            {
                 i__1 = *n;
-                for (j = 1; j <= i__1; ++j) {
-                    if (*alpha != 1.f) {
+                for (j = 1; j <= i__1; ++j)
+                {
+                    if (*alpha != 1.f)
+                    {
                         i__2 = *m;
-                        for (i__ = 1; i__ <= i__2; ++i__) {
+                        for (i__ = 1; i__ <= i__2; ++i__)
+                        {
                             b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1];
                         }
                     }
-                    for (k = *m; k >= 1; --k) {
-                        if (b[k + j * b_dim1] != 0.f) {
-                            if (nounit) {
+                    for (k = *m; k >= 1; --k)
+                    {
+                        if (b[k + j * b_dim1] != 0.f)
+                        {
+                            if (nounit)
+                            {
                                 b[k + j * b_dim1] /= a[k + k * a_dim1];
                             }
                             i__2 = k - 1;
-                            for (i__ = 1; i__ <= i__2; ++i__) {
-                                b[i__ + j * b_dim1] -= b[k + j * b_dim1] * a[
-                                    i__ + k * a_dim1];
-                            }
-                        }
-                    }
-                }
-            } else {
-                i__1 = *n;
-                for (j = 1; j <= i__1; ++j) {
-                    if (*alpha != 1.f) {
-                        i__2 = *m;
-                        for (i__ = 1; i__ <= i__2; ++i__) {
-                            b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1];
-                        }
-                    }
-                    i__2 = *m;
-                    for (k = 1; k <= i__2; ++k) {
-                        if (b[k + j * b_dim1] != 0.f) {
-                            if (nounit) {
-                                b[k + j * b_dim1] /= a[k + k * a_dim1];
-                            }
-                            i__3 = *m;
-                            for (i__ = k + 1; i__ <= i__3; ++i__) {
-                                b[i__ + j * b_dim1] -= b[k + j * b_dim1] * a[
-                                    i__ + k * a_dim1];
+                            for (i__ = 1; i__ <= i__2; ++i__)
+                            {
+                                b[i__ + j * b_dim1] -= b[k + j * b_dim1] * a[i__ + k * a_dim1];
                             }
                         }
                     }
                 }
             }
-        } else {
+            else
+            {
+                i__1 = *n;
+                for (j = 1; j <= i__1; ++j)
+                {
+                    if (*alpha != 1.f)
+                    {
+                        i__2 = *m;
+                        for (i__ = 1; i__ <= i__2; ++i__)
+                        {
+                            b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1];
+                        }
+                    }
+                    i__2 = *m;
+                    for (k = 1; k <= i__2; ++k)
+                    {
+                        if (b[k + j * b_dim1] != 0.f)
+                        {
+                            if (nounit)
+                            {
+                                b[k + j * b_dim1] /= a[k + k * a_dim1];
+                            }
+                            i__3 = *m;
+                            for (i__ = k + 1; i__ <= i__3; ++i__)
+                            {
+                                b[i__ + j * b_dim1] -= b[k + j * b_dim1] * a[i__ + k * a_dim1];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
 
             /*           Form  B := alpha*inv( A' )*B. */
 
-            if (upper) {
+            if (upper)
+            {
                 i__1 = *n;
-                for (j = 1; j <= i__1; ++j) {
+                for (j = 1; j <= i__1; ++j)
+                {
                     i__2 = *m;
-                    for (i__ = 1; i__ <= i__2; ++i__) {
+                    for (i__ = 1; i__ <= i__2; ++i__)
+                    {
                         temp = *alpha * b[i__ + j * b_dim1];
                         i__3 = i__ - 1;
-                        for (k = 1; k <= i__3; ++k) {
+                        for (k = 1; k <= i__3; ++k)
+                        {
                             temp -= a[k + i__ * a_dim1] * b[k + j * b_dim1];
                         }
-                        if (nounit) {
+                        if (nounit)
+                        {
                             temp /= a[i__ + i__ * a_dim1];
                         }
                         b[i__ + j * b_dim1] = temp;
                     }
                 }
-            } else {
+            }
+            else
+            {
                 i__1 = *n;
-                for (j = 1; j <= i__1; ++j) {
-                    for (i__ = *m; i__ >= 1; --i__) {
+                for (j = 1; j <= i__1; ++j)
+                {
+                    for (i__ = *m; i__ >= 1; --i__)
+                    {
                         temp = *alpha * b[i__ + j * b_dim1];
                         i__2 = *m;
-                        for (k = i__ + 1; k <= i__2; ++k) {
+                        for (k = i__ + 1; k <= i__2; ++k)
+                        {
                             temp -= a[k + i__ * a_dim1] * b[k + j * b_dim1];
                         }
-                        if (nounit) {
+                        if (nounit)
+                        {
                             temp /= a[i__ + i__ * a_dim1];
                         }
                         b[i__ + j * b_dim1] = temp;
@@ -389,58 +447,78 @@ int strsm(const char *side, const char *uplo, const char *transa, const char *di
                 }
             }
         }
-    } else {
-        if (lsame(transa, "N")) {
+    }
+    else
+    {
+        if (lsame(transa, "N"))
+        {
             /*           Form  B := alpha*B*inv( A ). */
-            if (upper) {
+            if (upper)
+            {
                 i__1 = *n;
-                for (j = 1; j <= i__1; ++j) {
-                    if (*alpha != 1.f) {
+                for (j = 1; j <= i__1; ++j)
+                {
+                    if (*alpha != 1.f)
+                    {
                         i__2 = *m;
-                        for (i__ = 1; i__ <= i__2; ++i__) {
+                        for (i__ = 1; i__ <= i__2; ++i__)
+                        {
                             b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1];
                         }
                     }
                     i__2 = j - 1;
-                    for (k = 1; k <= i__2; ++k) {
-                        if (a[k + j * a_dim1] != 0.f) {
+                    for (k = 1; k <= i__2; ++k)
+                    {
+                        if (a[k + j * a_dim1] != 0.f)
+                        {
                             i__3 = *m;
-                            for (i__ = 1; i__ <= i__3; ++i__) {
-                                b[i__ + j * b_dim1] -= a[k + j * a_dim1] * b[
-                                    i__ + k * b_dim1];
+                            for (i__ = 1; i__ <= i__3; ++i__)
+                            {
+                                b[i__ + j * b_dim1] -= a[k + j * a_dim1] * b[i__ + k * b_dim1];
                             }
                         }
                     }
-                    if (nounit) {
+                    if (nounit)
+                    {
                         temp = 1.f / a[j + j * a_dim1];
                         i__2 = *m;
-                        for (i__ = 1; i__ <= i__2; ++i__) {
+                        for (i__ = 1; i__ <= i__2; ++i__)
+                        {
                             b[i__ + j * b_dim1] = temp * b[i__ + j * b_dim1];
                         }
                     }
                 }
-            } else {
-                for (j = *n; j >= 1; --j) {
-                    if (*alpha != 1.f) {
+            }
+            else
+            {
+                for (j = *n; j >= 1; --j)
+                {
+                    if (*alpha != 1.f)
+                    {
                         i__1 = *m;
-                        for (i__ = 1; i__ <= i__1; ++i__) {
+                        for (i__ = 1; i__ <= i__1; ++i__)
+                        {
                             b[i__ + j * b_dim1] = *alpha * b[i__ + j * b_dim1];
                         }
                     }
                     i__1 = *n;
-                    for (k = j + 1; k <= i__1; ++k) {
-                        if (a[k + j * a_dim1] != 0.f) {
+                    for (k = j + 1; k <= i__1; ++k)
+                    {
+                        if (a[k + j * a_dim1] != 0.f)
+                        {
                             i__2 = *m;
-                            for (i__ = 1; i__ <= i__2; ++i__) {
-                                b[i__ + j * b_dim1] -= a[k + j * a_dim1] * b[
-                                    i__ + k * b_dim1];
+                            for (i__ = 1; i__ <= i__2; ++i__)
+                            {
+                                b[i__ + j * b_dim1] -= a[k + j * a_dim1] * b[i__ + k * b_dim1];
                             }
                         }
                     }
-                    if (nounit) {
+                    if (nounit)
+                    {
                         temp = 1.f / a[j + j * a_dim1];
                         i__1 = *m;
-                        for (i__ = 1; i__ <= i__1; ++i__) {
+                        for (i__ = 1; i__ <= i__1; ++i__)
+                        {
                             b[i__ + j * b_dim1] = temp * b[i__ + j * b_dim1];
                         }
                     }
@@ -449,55 +527,74 @@ int strsm(const char *side, const char *uplo, const char *transa, const char *di
         }
         else /* Form  B := alpha*B*inv( A' ). */
         {
-            if (upper) {
-                for (k = *n; k >= 1; --k) {
-                    if (nounit) {
+            if (upper)
+            {
+                for (k = *n; k >= 1; --k)
+                {
+                    if (nounit)
+                    {
                         temp = 1.f / a[k + k * a_dim1];
                         i__1 = *m;
-                        for (i__ = 1; i__ <= i__1; ++i__) {
+                        for (i__ = 1; i__ <= i__1; ++i__)
+                        {
                             b[i__ + k * b_dim1] = temp * b[i__ + k * b_dim1];
                         }
                     }
                     i__1 = k - 1;
-                    for (j = 1; j <= i__1; ++j) {
-                        if (a[j + k * a_dim1] != 0.f) {
+                    for (j = 1; j <= i__1; ++j)
+                    {
+                        if (a[j + k * a_dim1] != 0.f)
+                        {
                             temp = a[j + k * a_dim1];
                             i__2 = *m;
-                            for (i__ = 1; i__ <= i__2; ++i__) {
+                            for (i__ = 1; i__ <= i__2; ++i__)
+                            {
                                 b[i__ + j * b_dim1] -= temp * b[i__ + k * b_dim1];
                             }
                         }
                     }
-                    if (*alpha != 1.f) {
+                    if (*alpha != 1.f)
+                    {
                         i__1 = *m;
-                        for (i__ = 1; i__ <= i__1; ++i__) {
+                        for (i__ = 1; i__ <= i__1; ++i__)
+                        {
                             b[i__ + k * b_dim1] = *alpha * b[i__ + k * b_dim1];
                         }
                     }
                 }
-            } else {
+            }
+            else
+            {
                 i__1 = *n;
-                for (k = 1; k <= i__1; ++k) {
-                    if (nounit) {
+                for (k = 1; k <= i__1; ++k)
+                {
+                    if (nounit)
+                    {
                         temp = 1.f / a[k + k * a_dim1];
                         i__2 = *m;
-                        for (i__ = 1; i__ <= i__2; ++i__) {
+                        for (i__ = 1; i__ <= i__2; ++i__)
+                        {
                             b[i__ + k * b_dim1] = temp * b[i__ + k * b_dim1];
                         }
                     }
                     i__2 = *n;
-                    for (j = k + 1; j <= i__2; ++j) {
-                        if (a[j + k * a_dim1] != 0.f) {
+                    for (j = k + 1; j <= i__2; ++j)
+                    {
+                        if (a[j + k * a_dim1] != 0.f)
+                        {
                             temp = a[j + k * a_dim1];
                             i__3 = *m;
-                            for (i__ = 1; i__ <= i__3; ++i__) {
+                            for (i__ = 1; i__ <= i__3; ++i__)
+                            {
                                 b[i__ + j * b_dim1] -= temp * b[i__ + k * b_dim1];
                             }
                         }
                     }
-                    if (*alpha != 1.f) {
+                    if (*alpha != 1.f)
+                    {
                         i__2 = *m;
-                        for (i__ = 1; i__ <= i__2; ++i__) {
+                        for (i__ = 1; i__ <= i__2; ++i__)
+                        {
                             b[i__ + k * b_dim1] = *alpha * b[i__ + k * b_dim1];
                         }
                     }
@@ -508,4 +605,3 @@ int strsm(const char *side, const char *uplo, const char *transa, const char *di
 
     return 0;
 }
-

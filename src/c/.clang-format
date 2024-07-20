@@ -8,16 +8,18 @@ AllowAllParametersOfDeclarationOnNextLine: 'false'
 AlignConsecutiveAssignments: 'true'
 AlignConsecutiveDeclarations: 'true'
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortIfStatementsOnASingleLine: 'false'
+AllowShortIfStatementsOnASingleLine: 'true'
 AllowShortLoopsOnASingleLine: 'false'
 AlwaysBreakAfterDefinitionReturnType: None
 BreakBeforeBinaryOperators: None
 BinPackParameters: 'true'
 BinPackArguments: 'true'
 BreakStringLiterals: 'true'
-ColumnLimit: '80'
+ColumnLimit: '100'
 IndentCaseLabels: 'false'
 Language: Cpp
+BraceWrapping:
+    AfterControlStatement: 'true'
 ReflowComments: 'true'
 SortIncludes: 'false'
 SpacesInParentheses: 'false'

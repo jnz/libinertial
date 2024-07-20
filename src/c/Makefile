@@ -1,6 +1,7 @@
 CC = gcc
 CFLAGS = -O2 -Wall -Wdouble-promotion -fno-math-errno
 SOURCES = navtoolbox.c test.c linalg.c
+HEADERS = navtoolbox.h linalg.h
 OUTPUT = navtest
 
 all: $(OUTPUT)
@@ -21,6 +22,10 @@ run_test: $(OUTPUT)
 .PHONY: analyze
 analyze:
 	scan-build $(CC) -fsanitize=address $(CFLAGS) $(SOURCES) -o $(OUTPUT)
+
+format: $(SOURCES) $(HEADERS)
+	clang-format -i $(SOURCES)
+	clang-format -i $(HEADERS)
 
 clean:
 	rm -f $(OUTPUT)

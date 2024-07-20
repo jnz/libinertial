@@ -14,7 +14,7 @@
  * DEFINES
  ******************************************************************************/
 
-#define MAT_ELEM(M, row, col, numrows, numcols)  (M[row + col*numrows])
+#define MAT_ELEM(M, row, col, numrows, numcols) (M[row + col * numrows])
 #define SQRTF(x) sqrtf(x)
 
 /******************************************************************************
@@ -47,8 +47,7 @@
  * @param[in] beta Factor beta
  * @param[in/out] C Output matrix (n x k)
  */
-void matmul(const char* ta, const char* tb, int n, int k, int m,
-            float alpha, const float* A,
+void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, const float* A,
             const float* B, float beta, float* C);
 
 /** @brief Calculate the lower triangular matrix L, so
@@ -69,10 +68,7 @@ void matmul(const char* ta, const char* tb, int n, int k, int m,
  */
 int cholesky(float* A, const int n, int onlyWriteLowerPart);
 
-int strsm(const char *side, const char *uplo, const char *transa, const char *diag,
-    int* m, int* n, float* alpha, float* a, int* lda, float *b, int* ldb);
+int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m, int* n,
+          float* alpha, float* a, int* lda, float* b, int* ldb);
 
 /* @} */
-
-
-
