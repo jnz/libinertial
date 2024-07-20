@@ -22,7 +22,7 @@ run_test: $(OUTPUT)
 
 .PHONY: analyze tidy
 analyze:
-	scan-build $(CC) -fsanitize=address $(CFLAGS) $(SOURCES) -o $(OUTPUT) $(LDFLAGS)
+	scan-build -v clang -fsanitize=address $(CFLAGS) $(SOURCES) -o $(OUTPUT) $(LDFLAGS)
 
 tidy:
 	clang-tidy $(SOURCES) --
