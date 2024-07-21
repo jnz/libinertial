@@ -48,8 +48,8 @@ static int lsame(const char* a, const char* b);
 void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, const float* A,
             const float* B, float beta, float* C)
 {
-    const int ca     = *ta == 'T';
-    const int cb     = *tb == 'T';
+    const int ca     = lsame(ta, "T");
+    const int cb     = lsame(tb, "T");
     const int branch = (ca << 1) | (cb);
 
     for (int i = 0; i < n; i++)
