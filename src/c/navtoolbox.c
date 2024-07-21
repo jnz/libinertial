@@ -20,6 +20,9 @@
  * DEFINES
  ******************************************************************************/
 
+#define NAV_KALMAN_MAX_STATE_SIZE           32
+#define NAV_KALMAN_MAX_MEASUREMENTS         3
+
 /******************************************************************************
  * TYPEDEFS
  ******************************************************************************/
@@ -69,19 +72,53 @@ void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const floa
     R_output[8]      = cosr * cosp;
 }
 
-#if 0
-void nav_filter(void)
+int nav_kalman(float* x, float* P, const float* dl, const float* R, const float* H, int n, int m)
 {
-    /* matmul, matinv */
-    matmul("NN",n,m,n,1.0,P,H,0.0,F);       /* Q=H'*P*H+R */
+    int result;
+    float D[NAV_KALMAN_MAX_STATE_SIZE   * NAV_KALMAN_MAX_MEASUREMENTS];
+    float L[NAV_KALMAN_MAX_MEASUREMENTS * NAV_KALMAN_MAX_MEASUREMENTS];
+    float E[NAV_KALMAN_MAX_STATE_SIZE   * NAV_KALMAN_MAX_MEASUREMENTS];
+    float K[NAV_KALMAN_MAX_STATE_SIZE   * NAV_KALMAN_MAX_MEASUREMENTS];
+
+    assert(n <= NAV_KALMAN_MAX_STATE_SIZE);
+    assert(m <= NAV_KALMAN_MAX_MEASUREMENTS);
+
+    /*  (1) D = P * A'                  gemm or symm
+     *  (2) S = A * D + R               gemm
+     *  (3) L = chol(S) (L*L'=S)        potrf
+     *  (4) E = D * U ^ -1              trsm
+     *  (5) P = P - E * E '             syrk
+     *  (6) K = E * U ^ -T              trsm
+     *  (7) x = x + K * v               gemm or gemv
+     *
+     *  n = state variables
+     *  m = measurements
+     *
+     *  Matrix dimensions:
+     *  D = n x m
+     *  S = m x m
+     *  U = m x m
+     *  E = n x m
+     *  K = n x m */
+
+    /*
+    matmul("N", "T", n, m, n, 1.0f, P, H, 0.0f, D);  // (1)
+    memcpy(R, size(float)*m*m, U);                   // U = S = R
+    matmul("N", "N", m, m, n, 1.0f, A, D, 1.0f, U);  // (2)
+    result = cholesky(
+    */
+
+}
+
+#if 0
+    matmul("NN",n,m,n,1.0,P,H,0.0,F);
     matmul("TN",m,m,n,1.0,H,F,1.0,Q);
     if (!(info=matinv(Q,m))) {
-        matmul("NN",n,m,m,1.0,F,Q,0.0,K);   /* K=P*H*Q^-1 */
-        matmul("NN",n,1,m,1.0,K,v,1.0,xp);  /* xp=x+K*v */
-        matmul("NT",n,n,m,-1.0,K,H,1.0,I);  /* Pp=(I-K*H')*P */
+        matmul("NN",n,m,m,1.0,F,Q,0.0,K);
+        matmul("NN",n,1,m,1.0,K,v,1.0,xp);
+        matmul("NT",n,n,m,-1.0,K,H,1.0,I);
         matmul("NN",n,n,n,1.0,I,P,0.0,Pp);
     }
-}
 #endif
 
 /* @} */

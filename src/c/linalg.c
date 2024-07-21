@@ -322,7 +322,7 @@ static int strsm(const char* side, const char* uplo, const char* transa, const
     }
     if (info != 0)
     {
-        return 0;
+        return info;
     }
     if (*m == 0 || *n == 0)
     { /*     Quick return if possible. */
@@ -342,7 +342,6 @@ static int strsm(const char* side, const char* uplo, const char* transa, const
         return 0;
     }
 
-    /*     Start the operations. */
     if (lside)
     {
         if (lsame(transa, "N"))
@@ -617,3 +616,4 @@ static int strsm(const char* side, const char* uplo, const char* transa, const
 
     return 0;
 }
+

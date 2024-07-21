@@ -188,6 +188,7 @@ static void testlinalg(void)
         }
         printf("[x] Right-hand side triangular solve test case #2 (trisolveright)\n");
     }
+    /* FIXME: add test for cases were trisolveright could fail */
 }
 
 static void testnavtoolbox(void)

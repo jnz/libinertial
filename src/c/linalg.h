@@ -41,9 +41,9 @@
  *
  * @param[in] ta Supply "T" (transpose A) or "N" (don't transpose A)
  * @param[in] tb Supply "T" (transpose B) or "N" (don't transpose B)
- * @param[in] n Dimension n (rows of A)
- * @param[in] k Dimension k (cols of B)
- * @param[in] m Dimension m (rows of B)
+ * @param[in] n Dimension n (rows of A) (dimension after transpose)
+ * @param[in] k Dimension k (cols of B) (dimension after transpose)
+ * @param[in] m Dimension m (rows of B) (dimension after transpose)
  * @param[in] alpha Factor alpha
  * @param[in] A Input matrix A (n x m)
  * @param[in] B Input matrix B (m x k)
