@@ -58,6 +58,7 @@ static void matprint(const float* R, const int n, const int m, const char* fmt, 
 static void testlinalg(void)
 {
     printf("Running linalg (linear algebra) tests...\n");
+    /* Note: all matrices in column-major order */
 
     // Test Matrix Multiplication
     {

@@ -1,5 +1,8 @@
 /** @file linalg.h
  * @brief Embedded linear algebra math library
+ *
+ * Note: all matrices are stored in column-major order.
+ *
  * @{ */
 
 /******************************************************************************
@@ -34,7 +37,7 @@
  ******************************************************************************/
 
 /*** @brief matrix multiply C = alpha*A*B + beta*C
- * BLAS equivalent: ?gemm
+ * BLAS: ?gemm
  *
  * @param[in] ta Supply "T" (transpose A) or "N" (don't transpose A)
  * @param[in] tb Supply "T" (transpose B) or "N" (don't transpose B)
@@ -51,9 +54,9 @@ void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, co
             const float* B, float beta, float* C);
 
 /** @brief Calculate the lower triangular matrix L, so
- * that L*L' = A.
- * Operation count: n^3/6 with n square roots.
+ * that L*L' = A. Operation count: n^3/6 with n square roots.
  * BLAS equivalent: ?potrf
+ *
  * Optmized for
  *
  * @param[in,out] A Symmetric, positive definite (n x n) matrix. Only upper
@@ -70,6 +73,7 @@ int cholesky(float* A, const int n, int onlyWriteLowerPart);
 
 /**
  * @brief Triangular solve (right hand side).
+ * BLAS: ?trsm
  *
  * Solve matrix equation: X*L = A
  * @param[in]     L Given lower triangular matrix (dimension n x n)
