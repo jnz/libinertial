@@ -120,6 +120,22 @@ int cholesky(float* A, const int n, int onlyWriteLowerPart)
     return 0;
 }
 
+/**
+ * @brief Triangular solve (right hand side).
+ *
+ * Solve matrix equation: X*L = A
+ * @param[in]     L Given lower triangular matrix (dimension m x m)
+ * @param[in,out] A Matrix being overwritten by X (dimension n x m)
+ * @param[in]     n Matrix dimension
+ * @param[in]     m Matrix dimension
+ * @param[in]     tp Transpose L?
+ */
+int trisolveright(const float* L, float* A,
+                  const int n, const int m, const char* tp)
+{
+
+}
+
 /******************************************************************************
  * Local BLAS/LAPACK
  ******************************************************************************/
