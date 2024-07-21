@@ -41,7 +41,7 @@ inline int max(int a, int b)
 /* BLAS/LAPACK routines */
 static int lsame(const char* a, const char* b);
 static int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m, int* n,
-                 float* alpha, float* a, int* lda, float* b, int* ldb);
+                 float* alpha, const float* a, int* lda, float* b, int* ldb);
 
 
 /******************************************************************************
@@ -141,7 +141,7 @@ static int lsame(const char* a, const char* b)
 }
 
 static int strsm(const char* side, const char* uplo, const char* transa, const
-                 char* diag, int* m, int* n, float* alpha, float* a, int* lda,
+                 char* diag, int* m, int* n, float* alpha, const float* a, int* lda,
                  float* b, int* ldb)
 {
     /* System generated locals */
