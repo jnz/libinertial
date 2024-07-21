@@ -168,6 +168,26 @@ static void testlinalg(void)
         }
         printf("[x] Right-hand side triangular solve with transpose (trisolveright)\n");
     }
+    {
+        float L[3*3];
+        float Xexp[3*3];
+        float B[3*3];
+        hilbert(L, 3);
+        hilbert(Xexp, 3);
+        cholesky(L, 3, 0);
+        matmul("N", "N", 3, 3, 3, 1.0f, Xexp, L, 0.0f, B);
+        // matprint(Xexp, 3, 3, "%8.6f", "X");
+        // matprint(L, 3, 3, "%8.6f", "L");
+        // matprint(B, 3, 3, "%8.6f", "B");
+        const int result = trisolveright(L, B, 3, 3, "N");
+        assert(result == 0);
+        const float threshold = 1.0e-07f;
+        for (int i = 0; i < 3 * 3; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, B[i], Xexp[i], "trisolveright with transpose failed");
+        }
+        printf("[x] Right-hand side triangular solve test case #2 (trisolveright)\n");
+    }
 }
 
 static void testnavtoolbox(void)
