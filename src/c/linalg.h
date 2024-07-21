@@ -68,7 +68,18 @@ void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, co
  */
 int cholesky(float* A, const int n, int onlyWriteLowerPart);
 
-int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m, int* n,
-          float* alpha, float* a, int* lda, float* b, int* ldb);
+/**
+ * @brief Triangular solve (right hand side).
+ *
+ * Solve matrix equation: X*L = A
+ * @param[in]     L Given lower triangular matrix (dimension n x n)
+ * @param[in,out] A Matrix being overwritten by X (dimension m x n)
+ * @param[in]     n Matrix dimension (rows / columns of L)
+ * @param[in]     m Matrix dimension (rows of A)
+ * @param[in]     tp Transpose L?
+ *
+ * @return 0 = successful
+ */
+int trisolveright(const float* L, float* A, int n, int m, const char* tp);
 
 /* @} */

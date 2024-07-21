@@ -140,12 +140,32 @@ static void testlinalg(void)
         printf("[x] Cholesky decomposition on close to singular matrix "
                "(cholesky)\n");
     }
+    // Right-hand side triangular solve
     {
-        /*
-         *strsm(const char *side, const char *uplo, const char *transa, const
-         *char *diag, int* m, int* n, float* alpha, float* a, int* lda, float
-         **b, int* ldb);
-         */
+        const float L[]    = { 2, 3, 0, 1 }; // 2 x 2 matrix
+        float       B[]    = { 8, 18, 28, 2, 4, 6 }; // 3 x 2 matrix
+        float       Xexp[] = { 1, 3, 5, 2, 4, 6 }; // X*L = B
+        const int result = trisolveright(L, B, 2, 3, "N");
+        assert(result == 0);
+        const float threshold = 1.0e-08f;
+        for (int i = 0; i < 2 * 3; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, B[i], Xexp[i], "trisolveright failed");
+        }
+        printf("[x] Right-hand side triangular solve (trisolveright)\n");
+    }
+    {
+        const float L[]    = { 2, 3, 0, 1 }; // 2 x 2 matrix
+        float       B[]    = { 12, 10, 8, 21, 17, 13 }; // 3 x 2 matrix
+        float       Xexp[] = { 6, 5, 4, 3, 2, 1 }; // X*L' = B
+        const int result = trisolveright(L, B, 2, 3, "T");
+        assert(result == 0);
+        const float threshold = 1.0e-08f;
+        for (int i = 0; i < 2 * 3; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, B[i], Xexp[i], "trisolveright with transpose failed");
+        }
+        printf("[x] Right-hand side triangular solve with transpose (trisolveright)\n");
     }
 }
 

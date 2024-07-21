@@ -40,6 +40,9 @@ inline int max(int a, int b)
 
 /* BLAS/LAPACK routines */
 static int lsame(const char* a, const char* b);
+static int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m, int* n,
+                 float* alpha, float* a, int* lda, float* b, int* ldb);
+
 
 /******************************************************************************
  * FUNCTION BODIES
@@ -120,20 +123,12 @@ int cholesky(float* A, const int n, int onlyWriteLowerPart)
     return 0;
 }
 
-/**
- * @brief Triangular solve (right hand side).
- *
- * Solve matrix equation: X*L = A
- * @param[in]     L Given lower triangular matrix (dimension m x m)
- * @param[in,out] A Matrix being overwritten by X (dimension n x m)
- * @param[in]     n Matrix dimension
- * @param[in]     m Matrix dimension
- * @param[in]     tp Transpose L?
- */
 int trisolveright(const float* L, float* A,
-                  const int n, const int m, const char* tp)
+                  int n, int m, const char* tp)
 {
-
+    float alpha = 1.0f;
+    return strsm("R" /* right hand*/, "L" /* lower triangular matrix */, tp /* transpose L? */,
+                 "N" /* L is not unit triangular */, &m, &n, &alpha, L, &n, A, &m);
 }
 
 /******************************************************************************
@@ -145,8 +140,9 @@ static int lsame(const char* a, const char* b)
     return (tolower(*a) == tolower(*b));
 }
 
-int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m, int* n,
-          float* alpha, float* a, int* lda, float* b, int* ldb)
+static int strsm(const char* side, const char* uplo, const char* transa, const
+                 char* diag, int* m, int* n, float* alpha, float* a, int* lda,
+                 float* b, int* ldb)
 {
     /* System generated locals */
     int a_dim1, a_offset, b_dim1, b_offset, i__1, i__2, i__3;
