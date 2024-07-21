@@ -118,17 +118,18 @@ static void testlinalg(void)
     }
     // Test cholesky decomposition
     {
-        const int n = 8;
-        float     L[n * n];
+        #define CHOLESKY_TEST_N     8
+        const int n = CHOLESKY_TEST_N;
+        float     L[CHOLESKY_TEST_N*CHOLESKY_TEST_N];
         hilbert(L, n); // L = hilbert(n) put hilbert matrix into L
         // matprint(L, n, n, "%10.8f", "H");
         const int result = cholesky(L, n, 0); // L = chol(L) inplace calc.
         assert(result == 0 && "Cholesky calculation test failed");
         // matprint(L, n, n, "%10.8f", "L (L*L'=H)");
         // test if L*L' actually is equal to H:
-        float LLt[n * n];
+        float LLt[CHOLESKY_TEST_N*CHOLESKY_TEST_N];
         matmul("N", "T", n, n, n, 1.0f, L, L, 0.0, LLt); // LLt = L*L'
-        float H[n * n];
+        float H[CHOLESKY_TEST_N*CHOLESKY_TEST_N];
         hilbert(H, n); // recreate expected result
         matprint(H, n, n, "%8.6f", "H");
         const float threshold = 1.5e-08f; // comparable error of independent MATLAB test
@@ -188,6 +189,8 @@ int main(int argc, char** argv)
 {
     testlinalg();
     testnavtoolbox();
+
+    printf("\n[OK] All tests completed.\n");
 
     return 0;
 }
