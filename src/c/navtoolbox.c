@@ -95,7 +95,7 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     memcpy(L /*dst*/, R /*src*/, sizeof(float)*m*m);       // Use L as temp. matrix, preload R
     matmul("T", "N", m, m, n, 1.0f, Ht, D, 1.0f, L);       // (2) L += H*D
     int result = cholesky(L, m, 1);                        // (3) L = chol(H*D + R) (inplace calculation of L)
-    if (result != 0) { return -1; }                        // Can't solve
+    if (result != 0) { return -1; }                        // Cholesky fails: bail out (*)
     trisolveright(L, D, m, n, "T");                        // (4) given L' and D, solve E*L' = D, for E, overwrite D with E
     symmetricrankupdate(P, D /*E*/, n, m);                 // (5) P = P - E*E'
     trisolveright(L, D /*E*/, m, n, "N");                  // (6) solve K*L = E, for K, overwrite D with K
@@ -104,6 +104,8 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     /* FIXME check for P positive definite (symmetric is automatic)*/
     /* FIXME check for isfinite() in state vector */
     /* FIXME check for chi2 */
+
+    /* (*) If a Cholesky decomposition is found the trsm operations will succeed. */
 
     return 0;
 }
