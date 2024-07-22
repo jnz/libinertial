@@ -73,29 +73,6 @@ void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const floa
     R_output[8]      = cosr * cosp;
 }
 
-#include <stdio.h>
-static void matprint(const float* R, const int n, const int m, const char* fmt, const char* name)
-{
-    if (name)
-    {
-        printf(" %s =\n", name);
-        printf("\t");
-    }
-    for (int i = 0; i < n; i++) /* row */
-    {
-        for (int j = 0; j < m; j++) /* col */
-        {
-            printf(fmt, (double)MAT_ELEM(R, i, j, n, m));
-            printf(" ");
-        }
-        printf("\n");
-        if (name && i < (n - 1))
-        {
-            printf("\t");
-        }
-    }
-}
-
 int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n, int m)
 {
     float D[NAV_KALMAN_MAX_STATE_SIZE   * NAV_KALMAN_MAX_MEASUREMENTS];
@@ -114,19 +91,14 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
      *  n = state variables
      *  m = measurements */
 
-    matmulsym(P, Ht, n, m, D);                       // (1) D = P * H' (using upper triangular part of P)
-    // matprint(D, n, m, "%6.3f", "D");
-    memcpy(L /*dst*/, R /*src*/, sizeof(float)*m*m); // Use L as temp. matrix, preload R
-    matmul("T", "N", m, m, n, 1.0f, Ht, D, 1.0f, L); // (2) L += H*D
-    int result = cholesky(L, m, 1);                  // (3) L = chol(H*D + R) (inplace calculation of L)
-    if (result != 0) { return -1; }                  // Can't solve
-    // matprint(L, m, m, "%6.3f", "L");
-    trisolveright(L, D, m, n, "T");                  // (4) given L' and D, solve E*L' = D, for E, overwrite D with E
-    // matprint(D, n, m, "%6.3f", "E");
-    // matprint(P, n, n, "%6.3f", "P");
-    symmetricrankupdate(P, D /*E*/, n, m);           // (5) P = P - E*E'
-    // matprint(P, n, n, "%6.3f", "P (post)");
-    trisolveright(L, D, m, n, "N");                  // (6) solve K*L = E, overwrite D with K
+    matmulsym(P, Ht, n, m, D);                             // (1) D = P * H' (using upper triangular part of P)
+    memcpy(L /*dst*/, R /*src*/, sizeof(float)*m*m);       // Use L as temp. matrix, preload R
+    matmul("T", "N", m, m, n, 1.0f, Ht, D, 1.0f, L);       // (2) L += H*D
+    int result = cholesky(L, m, 1);                        // (3) L = chol(H*D + R) (inplace calculation of L)
+    if (result != 0) { return -1; }                        // Can't solve
+    trisolveright(L, D, m, n, "T");                        // (4) given L' and D, solve E*L' = D, for E, overwrite D with E
+    symmetricrankupdate(P, D /*E*/, n, m);                 // (5) P = P - E*E'
+    trisolveright(L, D /*E*/, m, n, "N");                  // (6) solve K*L = E, for K, overwrite D with K
     matmul("N", "N", n, 1, m, 1.0f, D /*K*/, dz, 1.0f, x); // (7) x = x + K * dz (K is stored in D)
 
     /* FIXME check for P positive definite (symmetric is automatic)*/
