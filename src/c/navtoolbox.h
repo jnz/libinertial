@@ -54,4 +54,18 @@ void nav_roll_pitch_from_accelerometer(const float f[3], float* roll_rad, float*
 void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const float yaw_rad,
                          float R_output[9]);
 
+/** @brief Kalman Filter Routine.
+ *
+ * @param[in,out] x System state (dimension n)
+ * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty
+ * @param[in] dz Difference between measurement and expected measurement: z - H*x (dimension m)
+ * @param[in] R Covariance matrix of measurement uncertainty (dimension m x m)
+ * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
+ * @param[in] n Number of state variables
+ * @param[in] m Number of measurements
+ *
+ * Note (!): only the upper triangular part of P is referenced and updated.
+ */
+int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n, int m);
+
 /* @} */

@@ -146,8 +146,7 @@ static void testlinalg(void)
         const float L[]    = { 2, 3, 0, 1 }; // 2 x 2 matrix
         float       B[]    = { 8, 18, 28, 2, 4, 6 }; // 3 x 2 matrix
         float       Xexp[] = { 1, 3, 5, 2, 4, 6 }; // X*L = B
-        const int result = trisolveright(L, B, 2, 3, "N");
-        assert(result == 0);
+        trisolveright(L, B, 2, 3, "N");
         const float threshold = 1.0e-08f;
         for (int i = 0; i < 2 * 3; i++)
         {
@@ -159,8 +158,7 @@ static void testlinalg(void)
         const float L[]    = { 2, 3, 0, 1 }; // 2 x 2 matrix
         float       B[]    = { 12, 10, 8, 21, 17, 13 }; // 3 x 2 matrix
         float       Xexp[] = { 6, 5, 4, 3, 2, 1 }; // X*L' = B
-        const int result = trisolveright(L, B, 2, 3, "T");
-        assert(result == 0);
+        trisolveright(L, B, 2, 3, "T");
         const float threshold = 1.0e-08f;
         for (int i = 0; i < 2 * 3; i++)
         {
@@ -168,6 +166,26 @@ static void testlinalg(void)
         }
         printf("[x] Right-hand side triangular solve with transpose (trisolveright)\n");
     }
+    {
+        float L[3*3];
+        float Xexp[3*3];
+        float B[3*3];
+        hilbert(L, 3);
+        hilbert(Xexp, 3);
+        cholesky(L, 3, 0);
+        matmul("N", "N", 3, 3, 3, 1.0f, Xexp, L, 0.0f, B);
+        // matprint(Xexp, 3, 3, "%8.6f", "X");
+        // matprint(L, 3, 3, "%8.6f", "L");
+        // matprint(B, 3, 3, "%8.6f", "B");
+        trisolveright(L, B, 3, 3, "N");
+        const float threshold = 1.0e-07f;
+        for (int i = 0; i < 3 * 3; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, B[i], Xexp[i], "trisolveright with transpose failed");
+        }
+        printf("[x] Right-hand side triangular solve test case #2 (trisolveright)\n");
+    }
+    /* FIXME: add test for cases were trisolveright could fail */
 }
 
 static void testnavtoolbox(void)
@@ -203,6 +221,33 @@ static void testnavtoolbox(void)
                "(nav_matrix_body2nav)\n");
         printf("[x] Initial alignment from accelerometer "
                "(nav_roll_pitch_from_accelerometer)\n");
+    }
+    // Kalman Filter Tests 
+    {
+        const float R[3*3] = {0.25f,0,0, 0,0.25f,0, 0,0,0.25f};
+        const float dz[3]  = { 0.2688f, 0.9169f, -1.1294f };
+        const float Ht[4 * 3] = { 8, 1, 6, 1, 3, 5, 7, 2, 4, 9, 2, 3 };
+        float x[4] = {1, 1, 1, 1};
+        float P[4*4] = {0.04f,0,0,0, 0,0.04f,0,0, 0,0,0.04f,0, 0,0,0,0.04f};
+        int result = nav_kalman(x, P, dz, R, Ht, 4, 3);
+        assert(result == 0);
+        const float xexp[4] = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
+        const float threshold = 1.0e-04f;
+        const float Pexp[4*4] = {  0.0081f,   0.0000f,   0.0000f,   0.0000f,
+                                  -0.0006f,   0.0063f,   0.0000f,   0.0000f,
+                                  -0.0056f,  -0.0006f,   0.0081f,   0.0000f,
+                                  -0.0021f,  -0.0102f,  -0.0021f,   0.0367f }; /* upper triangular part is valid */
+        // matprint(x, 4, 1, "%6.3f", "x"); 
+        // matprint(P, 4, 4, "%6.3f", "P"); 
+        for (int i = 0; i < 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, x[i], xexp[i], "nav_kalman state vector calculation failed");
+        }
+        for (int i = 0; i < 4 * 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, P[i], Pexp[i], "nav_kalman covariance matrix calculation failed");
+        }
+        printf("[x] Kalman Filter Update (nav_kalman)\n");
     }
 }
 
@@ -262,3 +307,4 @@ static void matprint(const float* R, const int n, const int m, const char* fmt, 
         }
     }
 }
+
