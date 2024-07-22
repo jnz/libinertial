@@ -72,7 +72,7 @@ void matmulsym(const float* A_sym, const float* B, int n, int m, float* C)
     int   result = ssymm("L" /* calculate C = A*B not C = B*A */,
                          "U" /* reference upper triangular part of A */, &n, /* rows of B/C */
                          &m, /* cols of B / C */
-                         &alpha, (float*)A_sym, &n, B, &n, &beta, C, &n);
+                         &alpha, (float*)A_sym, &n, (float*)B, &n, &beta, C, &n);
     assert(result == 0);
 }
 
