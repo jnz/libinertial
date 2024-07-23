@@ -95,7 +95,7 @@ int cholesky(float* A, const int n, int onlyWriteLowerPart)
     for (int j = 0; j < n; j++) /* main loop */
     {
         const float Ajj = MAT_ELEM(A, j, j, n, n);
-        if (Ajj <= 0.0f || isnan(Ajj))
+        if (Ajj <= 0.0f || !isfinite(Ajj))
         {
             return -1;
         }

@@ -16,6 +16,7 @@
 
 #include "linalg.h"
 #include "navtoolbox.h"
+#include "benchmark/benchmark.h"
 
 /******************************************************************************
  * DEFINES
@@ -222,7 +223,7 @@ static void testnavtoolbox(void)
         printf("[x] Initial alignment from accelerometer "
                "(nav_roll_pitch_from_accelerometer)\n");
     }
-    // Kalman Filter Tests 
+    // Kalman Filter Tests
     {
         const float R[3*3] = {0.25f,0,0, 0,0.25f,0, 0,0,0.25f};
         const float dz[3]  = { 0.2688f, 0.9169f, -1.1294f };
@@ -237,8 +238,8 @@ static void testnavtoolbox(void)
                                   -0.0006f,   0.0063f,   0.0000f,   0.0000f,
                                   -0.0056f,  -0.0006f,   0.0081f,   0.0000f,
                                   -0.0021f,  -0.0102f,  -0.0021f,   0.0367f }; /* upper triangular part is valid */
-        // matprint(x, 4, 1, "%6.3f", "x"); 
-        // matprint(P, 4, 4, "%6.3f", "P"); 
+        // matprint(x, 4, 1, "%6.3f", "x");
+        // matprint(P, 4, 4, "%6.3f", "P");
         for (int i = 0; i < 4; i++)
         {
             TEST_FLOAT_WITHIN(threshold, x[i], xexp[i], "nav_kalman state vector calculation failed");
@@ -257,6 +258,8 @@ int main(int argc, char** argv)
     testnavtoolbox();
 
     printf("\n[OK] All tests completed.\n");
+
+    benchmark();
 
     return 0;
 }

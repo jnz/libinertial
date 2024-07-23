@@ -91,6 +91,12 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
      *  n = state variables
      *  m = measurements */
 
+    /* Inplace cholesky decomposition */
+    /* Only update the required triangular parts (save instructions and memory access) */
+    /* keep symmetry */
+    /* numerically stable */
+
+    // FIXME use lower triangular part of P to improve performance on column-major
     matmulsym(P, Ht, n, m, D);                             // (1) D = P * H' (using upper triangular part of P)
     memcpy(L /*dst*/, R /*src*/, sizeof(float)*m*m);       // Use L as temp. matrix, preload R
     matmul("T", "N", m, m, n, 1.0f, Ht, D, 1.0f, L);       // (2) L += H*D

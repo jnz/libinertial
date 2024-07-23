@@ -37,6 +37,10 @@
  * FUNCTION PROTOTYPES
  ******************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @brief Calculate an approximate orientation from accelerometer data,
  * assuming that the accelerometer measurement is mainly gravity.
  *
@@ -67,5 +71,9 @@ void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const floa
  * Note (!): only the upper triangular part of P is referenced and updated.
  */
 int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n, int m);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* @} */
