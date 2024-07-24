@@ -38,39 +38,41 @@
  ******************************************************************************/
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/** @brief Calculate an approximate orientation from accelerometer data,
- * assuming that the accelerometer measurement is mainly gravity.
- *
- * @param[in] f Specific force measurement x,y,z component (m/s^2)
- * @param[out] roll_rad Output roll angle (rad)
- * @param[out] pitch_rad Output pitch angle (rad) */
-void nav_roll_pitch_from_accelerometer(const float f[3], float* roll_rad, float* pitch_rad);
+    /** @brief Calculate an approximate orientation from accelerometer data,
+     * assuming that the accelerometer measurement is mainly gravity.
+     *
+     * @param[in] f Specific force measurement x,y,z component (m/s^2)
+     * @param[out] roll_rad Output roll angle (rad)
+     * @param[out] pitch_rad Output pitch angle (rad) */
+    void nav_roll_pitch_from_accelerometer(const float f[3], float* roll_rad, float* pitch_rad);
 
-/** @brief nav_matrix_body2nav Calculate a matrix R that transforms from
- * the body-frame (b) to the navigation-frame (n): R^n_b.
- * @param[in] roll_rad Roll angle in (rad)
- * @param[in] pitch_rad Pitch angle in (rad)
- * @param[in] yaw_rad Yaw angle in (rad)
- * @param[out] R_output Output 3x3 matrix in column-major format */
-void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const float yaw_rad,
-                         float R_output[9]);
+    /** @brief nav_matrix_body2nav Calculate a matrix R that transforms from
+     * the body-frame (b) to the navigation-frame (n): R^n_b.
+     * @param[in] roll_rad Roll angle in (rad)
+     * @param[in] pitch_rad Pitch angle in (rad)
+     * @param[in] yaw_rad Yaw angle in (rad)
+     * @param[out] R_output Output 3x3 matrix in column-major format */
+    void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const float yaw_rad,
+                             float R_output[9]);
 
-/** @brief Kalman Filter Routine.
- *
- * @param[in,out] x System state (dimension n)
- * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty
- * @param[in] dz Difference between measurement and expected measurement: z - H*x (dimension m)
- * @param[in] R Covariance matrix of measurement uncertainty (dimension m x m)
- * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
- * @param[in] n Number of state variables
- * @param[in] m Number of measurements
- *
- * Note (!): only the upper triangular part of P is referenced and updated.
- */
-int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n, int m);
+    /** @brief Kalman Filter Routine.
+     *
+     * @param[in,out] x System state (dimension n)
+     * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty
+     * @param[in] dz Difference between measurement and expected measurement: z - H*x (dimension m)
+     * @param[in] R Covariance matrix of measurement uncertainty (dimension m x m)
+     * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
+     * @param[in] n Number of state variables
+     * @param[in] m Number of measurements
+     *
+     * Note (!): only the upper triangular part of P is referenced and updated.
+     */
+    int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n,
+                   int m);
 
 #ifdef __cplusplus
 }

@@ -1,10 +1,11 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void benchmark(void);
+    void benchmark(void);
 
 #ifdef __cplusplus
 }

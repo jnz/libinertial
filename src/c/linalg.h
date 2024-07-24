@@ -53,7 +53,7 @@
 void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, const float* A,
             const float* B, float beta, float* C);
 
-/** @brief Multiplication of symmetric matrix A with B: 
+/** @brief Multiplication of symmetric matrix A with B:
  *         C = A*B
  *  @param[in] A_sym (n x n) matrix, only upper triangular part is referenced.
  *  @param[in] B (n x m) matrix
@@ -96,7 +96,7 @@ void trisolveright(const float* L, float* A, int n, int m, const char* tp);
 
 /** @brief Symmetric rank update. P = P - E*E'
  * @param[in,out] P Matrix (n x n) to be updated (only upper part is referenced and updated)
- * @param[in] E Matrix (n x m) including the update 
+ * @param[in] E Matrix (n x m) including the update
  * @param[in] n Number of rows and cols in P, rows in E
  * @param[in] m Number of cols in E */
 void symmetricrankupdate(float* P, const float* E, int n, int m);
