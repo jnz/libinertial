@@ -96,7 +96,7 @@ static int kalman_test_eigen(void)
     Matrix<float, 3, 1> z;
     Matrix<float, 3, 1> dz;
 
-    volatile float xr[4] = { 0, 0, 0, 0 }; /* make sure the kalman filter results are not optimized away */
+    volatile float xr[4] = { 0, 0, 0, 0 }; /* volatile: make sure code is not optimized away */
 
     int i;
     for (i=0;i<999999;i++)

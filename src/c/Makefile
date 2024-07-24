@@ -3,7 +3,7 @@ CFLAGS = -O2 -Wall -Wdouble-promotion -fno-math-errno
 SOURCES = navtoolbox.c test.c linalg.c benchmark/benchmark.cpp
 HEADERS = navtoolbox.h linalg.h benchmark/benchmark.h
 OUTPUT = navtest
-LDFLAGS = -lm
+LDFLAGS = -lm -lstdc++
 
 all: $(OUTPUT)
 
