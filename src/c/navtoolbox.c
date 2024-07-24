@@ -100,7 +100,9 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     matmulsym(P, Ht, n, m, D); // (1) D = P * H' (using upper triangular part of P)
     memcpy(L /*dst*/, R /*src*/, sizeof(float) * m * m); // Use L as temp. matrix, preload R
     matmul("T", "N", m, m, n, 1.0f, Ht, D, 1.0f, L);     // (2) L += H*D
-    int result = cholesky(L, m, 1); // (3) L = chol(H*D + R) (inplace calculation of L)
+    int result =
+        cholesky(L, m, 1 /*don't fill upper triangular part of L*/); // (3) L = chol(H*D + R)
+                                                                     // (inplace calculation of L)
     if (result != 0)
     {
         return -1;
