@@ -47,8 +47,8 @@ static int kalman_test1(void)
         xr[2] = x[2];
         xr[3] = x[3];
     }
-    printf("Position: %.6f %.6f %.6f\n", (double)xr[0], (double)xr[1], (double)xr[2]);
-    printf("Final bias estimation: %.6f (actual: %.6f)\n", (double)xr[3], (double)bias);
+    printf("Position: %.4f %.4f %.4f\n", (double)xr[0], (double)xr[1], (double)xr[2]);
+    printf("Final bias estimation: %.4f (actual: %.4f)\n", (double)xr[3], (double)bias);
     return i;
 }
 
@@ -56,21 +56,47 @@ static int kalman_test1(void)
 #include <Eigen/Dense>
 using namespace Eigen;
 
-static void KalmanEigen(const Matrix<float, Eigen::Dynamic, 1>&              dz,
-                        const Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& R,
-                        const Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& H,
-                        Matrix<float, Eigen::Dynamic, 1>&                    x,
-                        Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&       P)
+static int KalmanEigen(const Matrix<float, Eigen::Dynamic, 1>&              dz,
+                       const Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& R,
+                       const Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& H,
+                       Matrix<float, Eigen::Dynamic, 1>&                    x,
+                       Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&       P)
 {
-    MatrixXf D = P * H.transpose(); // common sub-expression
-    MatrixXf S = H * D + R;         // Innovation (or residual) covariance
-    // MatrixXf K = P * H.transpose() * S.inverse(); // Kalman gain
-    MatrixXf K = D * S.ldlt().solve(MatrixXf::Identity(S.rows(), S.cols()));
+    /* Vanilla implementation:
+    MatrixXf S = H * D * H.transpose() + R;
+    MatrixXf K = P * H.transpose() * S.inverse();
     x          = x + K * dz;
     MatrixXf I = MatrixXf::Identity(x.size(), x.size());
     P          = (I - K * H) * P;
-}
+    */
 
+    Eigen::MatrixXf D;
+    Eigen::MatrixXf L = R; // L is used as a temp matrix and preloaded with R
+
+    // (1) D = P * H'
+    D.noalias() = P.selfadjointView<Eigen::Upper>() * H.transpose();
+    // (2) L = H * D + R
+    L.noalias() += H * D;
+    // (3) L = chol(L)
+    Eigen::LLT<Eigen::MatrixXf> lltOfL(L);
+    if (lltOfL.info() != Eigen::Success) {
+        return -1; // Cholesky decomposition failed
+    }
+    L = lltOfL.matrixL();
+
+    // (4) E = D * (L')^-1
+    Eigen::MatrixXf E = L.triangularView<Eigen::Lower>().solve(D.transpose()).transpose();
+
+    // (5) P = P - E * E'
+    P.selfadjointView<Eigen::Upper>().rankUpdate(E, -1);
+
+    // (6) K = E * L^-1
+    Eigen::MatrixXf K = L.transpose().triangularView<Eigen::Upper>().solve(E.transpose()).transpose();
+
+    x.noalias() += K * dz;
+
+    return 0;
+}
 static int kalman_test_eigen(void)
 {
     const float sigma = 0.05f;
@@ -112,8 +138,8 @@ static int kalman_test_eigen(void)
         xr[2] = x(2);
         xr[3] = x(3);
     }
-    printf("Eigen Kalman Position: %.6f %.6f %.6f\n", (double)xr[0], (double)xr[1], (double)xr[2]);
-    printf("Eigen Final bias estimation: %.6f (actual: %.6f)\n", (double)xr[3], (double)bias);
+    printf("Eigen Kalman Position: %.4f %.4f %.4f\n", (double)xr[0], (double)xr[1], (double)xr[2]);
+    printf("Eigen Final bias estimation: %.4f (actual: %.4f)\n", (double)xr[3], (double)bias);
     return i;
 }
 // ----------------------------------------------------------------------------------
