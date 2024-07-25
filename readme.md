@@ -1,8 +1,8 @@
 LIB INERTIAL
 ------------
 
-An inertial navigation library written in MATLAB and C for research and
-embedded projects.
+Inertial navigation library functions written in MATLAB, C, and C++ for
+research and embedded projects.
 
 Author: Jan Zwiener (jan@zwiener.org)
 
