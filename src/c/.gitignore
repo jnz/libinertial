@@ -1,2 +1,5 @@
+*.s
 navtest
+gmon.out
+analysis.txt
 
