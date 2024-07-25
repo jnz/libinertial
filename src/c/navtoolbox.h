@@ -1,4 +1,6 @@
 /** @file navtoolbox.h
+ * libinertial, Jan Zwiener (jan@zwiener.org)
+ *
  * @brief Navigation Toolbox Helper Functions
  * @{ */
 
@@ -64,12 +66,14 @@ extern "C"
      * @param[in,out] x System state (dimension n)
      * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty
      * @param[in] dz Difference between measurement and expected measurement: z - H*x (dimension m)
-     * @param[in] R Covariance matrix of measurement uncertainty (dimension m x m)
+     * @param[in] R Full covariance matrix of measurement uncertainty (dimension m x m)
      * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
      * @param[in] n Number of state variables
      * @param[in] m Number of measurements
      *
      * Note (!): only the upper triangular part of P is referenced and updated.
+     *
+     * @return 0 on success, -1 on error.
      */
     int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n,
                    int m);

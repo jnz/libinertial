@@ -1,4 +1,6 @@
 /** @file navtoolbox.c
+ * libinertial, Jan Zwiener (jan@zwiener.org)
+ *
  * @brief Navigation Toolbox Helper Functions
  * @{ */
 

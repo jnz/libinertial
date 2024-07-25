@@ -1,4 +1,6 @@
 /** @file linalg.c
+ * libinertial, Jan Zwiener (jan@zwiener.org)
+ *
  * @brief Math functions
  * @{ */
 

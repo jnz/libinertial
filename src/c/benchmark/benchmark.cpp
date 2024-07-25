@@ -5,6 +5,8 @@
 #include "benchmark.h"
 #include "../navtoolbox.h"
 #include "../linalg.h"
+#include "../../cpp/navtoolboxeigen.h"
+using namespace Eigen;
 
 static int kalman_test1(void)
 {
@@ -53,50 +55,7 @@ static int kalman_test1(void)
 }
 
 // ----------------------------------------------------------------------------------
-#include <Eigen/Dense>
-using namespace Eigen;
 
-static int KalmanEigen(const Matrix<float, Eigen::Dynamic, 1>&              dz,
-                       const Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& R,
-                       const Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& H,
-                       Matrix<float, Eigen::Dynamic, 1>&                    x,
-                       Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&       P)
-{
-    /* Vanilla implementation:
-    MatrixXf S = H * D * H.transpose() + R;
-    MatrixXf K = P * H.transpose() * S.inverse();
-    x          = x + K * dz;
-    MatrixXf I = MatrixXf::Identity(x.size(), x.size());
-    P          = (I - K * H) * P;
-    */
-
-    Eigen::MatrixXf D;
-    Eigen::MatrixXf L = R; // L is used as a temp matrix and preloaded with R
-
-    // (1) D = P * H'
-    D.noalias() = P.selfadjointView<Eigen::Upper>() * H.transpose();
-    // (2) L = H * D + R
-    L.noalias() += H * D;
-    // (3) L = chol(L)
-    Eigen::LLT<Eigen::MatrixXf> lltOfL(L);
-    if (lltOfL.info() != Eigen::Success) {
-        return -1; // Cholesky decomposition failed
-    }
-    L = lltOfL.matrixL();
-
-    // (4) E = D * (L')^-1
-    Eigen::MatrixXf E = L.triangularView<Eigen::Lower>().solve(D.transpose()).transpose();
-
-    // (5) P = P - E * E'
-    P.selfadjointView<Eigen::Upper>().rankUpdate(E, -1);
-
-    // (6) K = E * L^-1
-    Eigen::MatrixXf K = L.transpose().triangularView<Eigen::Upper>().solve(E.transpose()).transpose();
-
-    x.noalias() += K * dz;
-
-    return 0;
-}
 static int kalman_test_eigen(void)
 {
     const float sigma = 0.05f;
@@ -131,7 +90,7 @@ static int kalman_test_eigen(void)
         z(2) = distribution(generator) + bias;
 
         dz = z - H * x;
-        KalmanEigen(dz, R, H, x, P);
+        nav_kalman_eigen(x, P, dz, R, H);
 
         xr[0] = x(0);
         xr[1] = x(1);

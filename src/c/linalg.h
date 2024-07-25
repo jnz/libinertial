@@ -1,4 +1,6 @@
 /** @file linalg.h
+ * libinertial, Jan Zwiener (jan@zwiener.org)
+ *
  * @brief Embedded linear algebra math library
  *
  * Note: all matrices are stored in column-major order.
