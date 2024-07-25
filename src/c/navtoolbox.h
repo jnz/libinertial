@@ -75,8 +75,8 @@ extern "C"
      *
      * @return 0 on success, -1 on error.
      */
-    int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n,
-                   int m);
+    int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht,
+                   int n, int m);
 
 #ifdef __cplusplus
 }
