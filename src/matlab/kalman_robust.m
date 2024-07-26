@@ -1,13 +1,13 @@
-function [x, P] = kalman_robust(x, P, dl, R, H, chi2_threshold)
+function [x, P] = kalman_robust(x, P, dz, R, H, chi2_threshold)
 %KALMAN_ROBUST Robust Kalman Filter based on:
 %   Chang, G. (2014). Robust Kalman filtering based on Mahalanobis distance
 %   as outlier judging criterion. Journal of Geodesy, 88(4), 391-401.
 %
 % x nx1 A priori state vector (size=n) at epoch k
 % P nxn Covariance matrix of state vector x at epoch k
-% dl mx1 Measurement difference vector (size=m) at epoch k
-%        dl = measurement - predicted measurement
-%        dl = y - H*x
+% dz mx1 Measurement difference vector (size=m) at epoch k
+%        dz = measurement - predicted measurement
+%        dz = y - H*x
 % R mxm Covariance matrix of measurement vector y
 % H mxn Observation matrix so that y = H*x
 %
@@ -15,7 +15,7 @@ function [x, P] = kalman_robust(x, P, dl, R, H, chi2_threshold)
 % chi2_threshold 1x1 Threshold (>0) to scale down measurements.
 % Can be computed with the chi-square inverse cumulative distribution
 % function ("chi2inv") for e.g. alpha=0.05:
-%   chi2_threshold = chi2inv(1-alpha, length(dl));
+%   chi2_threshold = chi2inv(1-alpha, length(dz));
 %
 % By default a table for significance level alpha = 5% is added to this
 % function.  If the measurement difference vector is larger than 20, a
@@ -27,10 +27,10 @@ function [x, P] = kalman_robust(x, P, dl, R, H, chi2_threshold)
 assert( ( (size(P,1)==size(P,2) ) && ... % symmetric covariance matrix
           (size(P,1)==size(x,1) ) && ...
           (size(x,2)==1 ) && ... % make sure x is a column vector
-          (size(dl,2)==1 ) && ... % make sure dl is a column vector
-          (size(dl,1)==size(R,1) ) && ...
+          (size(dz,2)==1 ) && ... % make sure dz is a column vector
+          (size(dz,1)==size(R,1) ) && ...
           (size(R,1)==size(R,2) ) && ...
-          (size(H,1)==size(dl,1) ) && ...
+          (size(H,1)==size(dz,1) ) && ...
           (size(H,2)==size(x,1) ) && ...
           (nargin >= 5 && nargin <= 6) ), 'Invalid arguments');
 
@@ -41,10 +41,10 @@ if (nargin < 6)
     table = [  3.8415  5.9915  7.8147  9.4877 11.0705 12.5916 14.0671 ...
               15.5073 16.9190 18.3070 19.6751 21.0261 22.3620 23.6848 ...
               24.9958 26.2962 27.5871 28.8693 30.1435 31.4104 ];
-    if (length(dl) > length(table))
+    if (length(dz) > length(table))
         error('Measurement vector y too big.');
     end
-    chi2_threshold = table(length(dl));
+    chi2_threshold = table(length(dz));
 end
 
 % Covariance of the observation prediction (= H*x in the linear case)
@@ -52,8 +52,8 @@ HPHT = H*P*H';
 P_predicted = HPHT + R;
 
 % square of the Mahalanobis distance from observation to the
-% predicted observation squared: (= dl'*inv(P_predicted)*dl)
-mahalanobis_dist_squared = (dl'/P_predicted)*dl;
+% predicted observation squared: (= dz'*inv(P_predicted)*dz)
+mahalanobis_dist_squared = (dz'/P_predicted)*dz;
 % The probability P that mahalanobis_dist_squared is larger than
 % chi2_threshold is alpha percent:
 %   P(mahalanobis_dist_squared > chi2_threshold) = alpha%
@@ -66,7 +66,7 @@ else
     Rf = R; % Accept the observation directly
 end
 
-[x, P] = kalman_takasu(x, P, dl, Rf, H);
+[x, P] = kalman_takasu(x, P, dz, Rf, H);
 
 end
 
