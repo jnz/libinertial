@@ -34,7 +34,7 @@ P = 0.5*(P+P');
 
 % Optional chi2 test, see [1] section 8.3.1.2 "Detecting anomalous Sensor Data"
 y = (dz'/U)';
-chi2 = y'*y / length(dz);
+chi2 = (y'*y) / length(dz);
 % [1] Grewal, Weill, Andrews (2001): Global positioning systems, inertial
 % navigation, and integration. 1st Ed. John Wiley & Sons, New York.
 

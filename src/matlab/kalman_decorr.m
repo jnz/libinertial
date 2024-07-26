@@ -1,9 +1,8 @@
 function [x, P] = kalman_decorr(x, P, z, R, H)
 %KALMAN_DECORR Kalman filter update routine based on measurement
 %   decorrelation. Source section 8.1.3.1:
-%   Grewal, Mohinder S., Lawrence R. Weill, and Angus P. Andrews. Global
-%   positioning systems, inertial navigation, and integration. John Wiley &
-%   Sons, 2007.
+%   [1] Grewal, Weill, Andrews (2001): Global positioning systems, inertial
+%   navigation, and integration. 1st Ed. John Wiley & Sons, New York.
 %
 % x (n x 1) A priori state vector (size=n) at epoch k
 % P (n x n) Covariance matrix of state vector x at epoch k
@@ -29,6 +28,8 @@ assert( ( (size(P,1)==size(P,2) ) && ... % symmetric covariance matrix
 zdecorr = (G')\z;
 Hdecorr = (G')\H;
 
+chi2sum = 0.0;
+
 for i=1:length(zdecorr)
     Hline = Hdecorr(i, :);
 
@@ -39,13 +40,14 @@ for i=1:length(zdecorr)
     % x = x + dx;
     % P = P - K*Hline*P;
 
-    K = (Hline*P*Hline' + 1)\(P*Hline');
-    dx = K*(zdecorr(i) - Hline*x);
+    s = 1.0 / (Hline*P*Hline' + 1);
+    K = (P*Hline')*s;
+    dz = zdecorr(i) - Hline*x;
+
+    dx = K*dz;
     x = x + dx;
     % [1] sec. 8.1.4 "Joseph stabilized implementation".
     P = (eye(length(x)) - K*Hline)*P*(eye(length(x)) - K*Hline)' + K*K';
-    % [1] Grewal, Weill, Andrews (2001): Global positioning systems, inertial
-    % navigation, and integration. 1st Ed. John Wiley & Sons, New York.
 end
 
 P = 0.5*(P + P');
