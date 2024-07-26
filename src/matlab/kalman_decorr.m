@@ -39,11 +39,13 @@ for i=1:length(zdecorr)
     % x = x + dx;
     % P = P - K*Hline*P;
 
-    % Grewal (2007): sec. 8.1.4 "Joseph stabilized implementation".
     K = (Hline*P*Hline' + 1)\(P*Hline');
     dx = K*(zdecorr(i) - Hline*x);
     x = x + dx;
+    % [1] sec. 8.1.4 "Joseph stabilized implementation".
     P = (eye(length(x)) - K*Hline)*P*(eye(length(x)) - K*Hline)' + K*K';
+    % [1] Grewal, Weill, Andrews (2001): Global positioning systems, inertial
+    % navigation, and integration. 1st Ed. John Wiley & Sons, New York.
 end
 
 P = 0.5*(P + P');

@@ -1,4 +1,4 @@
-function [x, P] = kalman_vanilla(x, P, dz, R, H)
+function [x, P, chi2] = kalman_vanilla(x, P, dz, R, H)
 %KALMAN_VANILLA Simple Kalman Filter implementation.
 %
 % x (n x 1) A priori state vector (size=n) at epoch k
@@ -22,10 +22,16 @@ assert( ( (size(P,1)==size(P,2) ) && ... % symmetric covariance matrix
           (size(H,2)==size(x,1) ) && ...
           (nargin == 5) ), 'Invalid arguments');
 
-K = (P*H')/(H*P*H' + R); % Kalman Gain Matrix K
+S = H*P*H' + R;
+K = (P*H')/S; % Kalman Gain Matrix K
 dx = K*dz; % Correction to state by measurement
 x = x + dx; % Update state vector, x is now the a posteriori state vec.
 P = (eye(length(x)) - K*H)*P; % a posteriori covariance matrix
 P = 0.5*(P+P');
+
+% Optional chi2 test, see [1] section 8.3.1.2 "Detecting anomalous Sensor Data"
+chi2 = (dz'/S)*dz / length(dz);
+% [1] Grewal, Weill, Andrews (2001): Global positioning systems, inertial
+% navigation, and integration. 1st Ed. John Wiley & Sons, New York.
 
 end

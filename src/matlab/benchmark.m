@@ -23,7 +23,7 @@ for i=1:epochs
     z = real_x(1:2) + randn(2, 1)*sigma_pos;
     dz = z - H*x;
 
-    [x, P] = kalman_takasu(x, P, dz, R, H);
+    [x, P, chi2] = kalman_takasu(x, P, dz, R, H);
 
     % Next step:
     real_x = Phi*real_x;
@@ -38,6 +38,7 @@ fprintf('Expected:  %6.3f %6.3f %6.3f %6.3f\n', real_x(1), real_x(2), real_x(3),
 fprintf('Estimated: %6.3f %6.3f %6.3f %6.3f\n', x(1), x(2), x(3), x(4));
 error_x = real_x - x;
 fprintf('Error:     %6.3f %6.3f %6.3f %6.3f\n', error_x(1), error_x(2), error_x(3), error_x(4));
+fprintf('chi2: %.3f\n', chi2);
 assert(max(abs(error_x(1:2))) < 2*sigma_pos);
 
 % Only valid for rng(42) and 30000 epochs:

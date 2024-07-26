@@ -1,4 +1,4 @@
-function [x, P] = kalman_takasu(x, P, dz, R, H)
+function [x, P, chi2] = kalman_takasu(x, P, dz, R, H)
 %KALMAN_TAKASU Kalman Filter equations from T. Takasu
 %
 % x (n x 1) A priori state vector (size=n) at epoch k
@@ -31,5 +31,11 @@ dx = K*dz;
 x = x + dx;
 P = P - E*E'; % dsyrk
 P = 0.5*(P+P');
+
+% Optional chi2 test, see [1] section 8.3.1.2 "Detecting anomalous Sensor Data"
+y = (dz'/U)';
+chi2 = y'*y / length(dz);
+% [1] Grewal, Weill, Andrews (2001): Global positioning systems, inertial
+% navigation, and integration. 1st Ed. John Wiley & Sons, New York.
 
 end
