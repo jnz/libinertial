@@ -47,7 +47,8 @@ for i=1:length(zdecorr)
     dx = K*dz;
     x = x + dx;
     % [1] sec. 8.1.4 "Joseph stabilized implementation".
-    P = (eye(length(x)) - K*Hline)*P*(eye(length(x)) - K*Hline)' + K*K';
+    W = eye(length(x)) - K*Hline;
+    P = W*P*W' + K*K';
 end
 
 P = 0.5*(P + P');
