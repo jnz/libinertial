@@ -22,21 +22,27 @@ R = [sigma_pos^2, 0; 0, sigma_pos^2];
 real_x = x;
 real_x(1:4) = [0; 0; 2; 2];
 
+% UDU Filter
+[U,d] = udu(P);
+
 tic
 for i=1:epochs
 
     z = real_x(1:2) + randn(2, 1)*sigma_pos;
     dz = z - H*x;
 
-    [x, P, chi2] = kalman_takasu(x, P, dz, R, H);
+    %[x, P, chi2] = kalman_takasu(x, P, dz, R, H);
     %[x, P, chi2] = kalman_vanilla(x, P, dz, R, H);
     %[x, P] = kalman_decorr(x, P, z, R, H);
+    [x,U,d] = kalman_udu(z,R,H,x,U,d);
 
     % Next step:
     real_x = Phi*real_x;
 
     x = Phi*x;
+    P = U*diag(d)*U';
     P = Phi*P*Phi' + Qnoise;
+    [U,d] = udu(P);
 end
 t = toc;
 us_per_epoch = (t / epochs)*1e6;

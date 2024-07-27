@@ -1,3 +1,4 @@
+function [U, d] = udu(M)
 % udu - Perform matrix decomposition to find upper triangular matrix U and
 % diagonal matrix D.
 %
@@ -31,8 +32,6 @@
 % Example usage:
 %   M = [4, 12, -16; 12, 37, -43; -16, -43, 98];
 %   [U, d] = udu(M);
-
-function [U, d] = udu(M)
 
     [m, ~] = size(M);
     assert(size(M,2)==m);
