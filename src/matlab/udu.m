@@ -42,7 +42,7 @@ function [U, d] = udu(M)
     for j = m:-1:1
         for i = j:-1:1
             sigma = M(i, j);
-            for k = j + 1:m
+            for k = (j+1):m
                 sigma = sigma - U(i, k) * d(k) * U(j, k);
             end
             if i == j
