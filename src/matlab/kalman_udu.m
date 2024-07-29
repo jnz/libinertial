@@ -1,18 +1,18 @@
 function [x,U,d] = kalman_udu(z,R,H,x,U,d)
-% UDU' Bierman filter
+% UDU' Bierman Filter Observation Step
 %
 % Inputs:
-%  z   - measurement (SCALAR)
+%  z   - scalar measurement
 %  R   - variance of measurement error
 %  H   - measurement sensitivity (row) vector
-%  xin - a priori estimate of state vector
-%  Uin - unit upper triangular factor of covariance matrix of a priori state uncertainty
-%  din - diagonal vector with factor of covariance matrix of a priori state uncertainty
+%  z   - a priori estimate of state vector
+%  U   - unit upper triangular factor of covariance matrix of a priori state uncertainty
+%  d   - diagonal vector with factor of covariance matrix of a priori state uncertainty
 %
 % Outputs:
 %  x   - a posteriori estimate of state vector
 %  U   - upper triangular UD factor of a posteriori state uncertainty covariance
-%  D   - diagonal UD factor of a posteriori state uncertainty covariance
+%  d   - diagonal UD factor vector of a posteriori state uncertainty covariance
 %
 % References:
 %   1. Grewal, Weill, Andrews. "Global positioning systems, inertial
