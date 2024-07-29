@@ -98,7 +98,6 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     /* keep symmetry */
     /* numerically stable */
 
-    // FIXME use lower triangular part of P to improve performance on column-major
     matmulsym(P, Ht, n, m, D); // (1) D = P * H' (using upper triangular part of P)
     memcpy(L /*dst*/, R /*src*/, sizeof(float) * m * m); // Use L as temp. matrix, preload R
     matmul("T", "N", m, m, n, 1.0f, Ht, D, 1.0f, L);     // (2) L += H*D
@@ -122,5 +121,62 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
 
     return 0;
 }
+
+static int nav_bierman_line(float* x, float* U, float* d, const float dz, const
+                            float R, const float* H_line, int n)
+{
+    float a[NAV_KALMAN_MAX_STATE_SIZE];
+    float b[NAV_KALMAN_MAX_STATE_SIZE];
+
+    float alpha = R;
+    float gamma = 1.0f/alpha;
+
+    matmul("T", "N", n, 1, n, 1.0f, U, H_line, 0.0f, a); // a = U'*H'
+    for (int j=0;j<n;j++)
+    {
+        b[j] = d[j]*a[j]; // b = diag(d)*a
+    }
+
+    for (int j=0;j<n;j++)
+    {
+        float beta=alpha;
+        alpha += a[j]*b[j];
+        float lambda = -a[j]*gamma;
+        gamma = 1.0f/alpha;
+        d[j] *= beta*gamma;
+
+        for (int i=0;i<j-1;i++)
+        {
+            beta = MAT_ELEM(U, i, j, n, n);
+            MAT_ELEM(U, i, j, n, n) = beta + b[i]*lambda;
+            b[i] += b[j]*beta;
+        }
+    }
+    for (int j=0;j<n;j++)
+    {
+        x[j] += gamma*dz*b[j];
+    }
+
+    return 0;
+}
+
+int nav_kalman_bierman(float* x, float* U, float* d, const float* dz, const float* R, const
+                float* Ht, int n, int m)
+{
+    int retcode = 0;
+    int line = 0;
+    for (int i=0;i<m;i++) /* for each measurement */
+    {
+        const float Rv = MAT_ELEM(R, i, i, m, m);
+        int status = nav_bierman_line(x, U, d, dz[i], Rv, &Ht[line], n);
+        if (status != 0)
+        {
+            retcode = -1; /* still process rest of the measurement vector */
+        }
+        line += n; /* go to next column in Ht */
+    }
+    return retcode;
+}
+
 
 /* @} */

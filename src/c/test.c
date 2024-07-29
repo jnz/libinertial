@@ -189,6 +189,28 @@ static void testlinalg(void)
         printf("[x] Right-hand side triangular solve test case #2 (trisolveright)\n");
     }
     /* FIXME: add test for cases were trisolveright could fail */
+    {
+        const float A[3*3] = { 9, 6, 8, 6, 6, 7, 8, 7, 9 };
+        float U[3*3] = { -1, 0, 0, -1, -1, 0, -1, -1, -1 };
+        float d[3] = { -1, -1, -1 };
+        udu(A, U, d, 3);
+
+        matprint(A, 3, 3, "%6.4f", "A");
+        matprint(U, 3, 3, "%6.4f", "U");
+        matprint(d, 3, 1, "%6.4f", "d");
+
+        const float Uexp[3*3] = {1, 0, 0, -0.4f, 1, 0, 0.8889f, 0.7778f, 1};
+        const float dexp[3] = { 1.8f, 0.5556f, 9 };
+        const float threshold = 1.0e-03f;
+        for (int i = 0; i < 3 * 3; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, U[i], Uexp[i], "UDU: U test failed");
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, d[i], dexp[i], "UDU: d test failed");
+        }
+    }
 }
 
 static void testnavtoolbox(void)

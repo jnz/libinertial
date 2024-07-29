@@ -78,6 +78,9 @@ extern "C"
     int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht,
                    int n, int m);
 
+    int nav_kalman_bierman(float* x, float* U, float* d, const float* dz, const float* R, const
+                    float* Ht, int n, int m);
+
 #ifdef __cplusplus
 }
 #endif
