@@ -276,6 +276,45 @@ static void testnavtoolbox(void)
         }
         printf("[x] Kalman Filter Update (nav_kalman)\n");
     }
+    {
+        const float R[3 * 3]  = { 0.25f, 0, 0, 0, 0.25f, 0, 0, 0, 0.25f };
+        const float z[3]      = { 16.2688f, 17.9169f, 16.8706f };
+        const float Ht[4 * 3] = { 8, 1, 6, 1, 3, 5, 7, 2, 4, 9, 2, 3 };
+        float       x[4]      = { 1, 1, 1, 1 };
+        float       P[4 * 4]  = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
+        float       U[4 * 4];
+        float       d[4];
+        int         result;
+
+        result = udu(P, U, d, 4);
+        assert(result == 0);
+
+        result = nav_kalman_bierman(x, U, d, z, R, Ht, 4, 3);
+
+        const float xexp[4]     = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
+        const float threshold   = 1.0e-04f;
+        const float Pexp[4 * 4] = {
+            0.0081f,  0.0000f,  0.0000f, 0.0000f, -0.0006f, 0.0063f,  0.0000f,  0.0000f,
+            -0.0056f, -0.0006f, 0.0081f, 0.0000f, -0.0021f, -0.0102f, -0.0021f, 0.0367f
+        }; /* upper triangular part is valid */
+        matprint(x, 4, 1, "%6.3f", "x");
+        matprint(U, 4, 4, "%6.3f", "U");
+        matprint(d, 4, 1, "%6.3f", "d");
+
+        /*
+        for (int i = 0; i < 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, x[i], xexp[i],
+                              "nav_kalman state vector calculation failed");
+        }
+        for (int i = 0; i < 4 * 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, P[i], Pexp[i],
+                              "nav_kalman covariance matrix calculation failed");
+        }
+        printf("[x] Kalman Filter Update (nav_kalman)\n");
+        */
+    }
 }
 
 int main(int argc, char** argv)

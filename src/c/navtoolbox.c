@@ -160,20 +160,22 @@ static int nav_bierman_line(float* x, float* U, float* d, const float dz, const
     return 0;
 }
 
-int nav_kalman_bierman(float* x, float* U, float* d, const float* dz, const float* R, const
-                float* Ht, int n, int m)
+int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float* R,
+    const float* Ht, int n, int m)
 {
     int retcode = 0;
     int line = 0;
     for (int i=0;i<m;i++) /* for each measurement */
     {
         const float Rv = MAT_ELEM(R, i, i, m, m);
-        int status = nav_bierman_line(x, U, d, dz[i], Rv, &Ht[line], n);
+        float dz = z[i];
+        matmul("N", "N", 1, 1, n, -1.0f, Ht, x, 1.0f, &dz); // dz = z - H(i,:)*x
+        int status = nav_bierman_line(x, U, d, dz, Rv, Ht, n);
         if (status != 0)
         {
             retcode = -1; /* still process rest of the measurement vector */
         }
-        line += n; /* go to next column in Ht */
+        Ht += n; /* go to next column in Ht */
     }
     return retcode;
 }
