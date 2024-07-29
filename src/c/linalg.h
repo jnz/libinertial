@@ -38,6 +38,11 @@
  * FUNCTION PROTOTYPES
  ******************************************************************************/
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /*** @brief matrix multiply C = alpha*A*B + beta*C
  * BLAS: ?gemm
  *
@@ -102,5 +107,23 @@ void trisolveright(const float* L, float* A, int n, int m, const char* tp);
  * @param[in] n Number of rows and cols in P, rows in E
  * @param[in] m Number of cols in E */
 void symmetricrankupdate(float* P, const float* E, int n, int m);
+
+/**
+ *  @brief UDU decomposition of a symmetrical m x m matrix so that A = U*D*U'.
+ *
+ *    D is returned as diagonal vector d so that diag(d) = D.
+ *    U Is an unit upper triangular matrix U.
+ *
+ * @param[in] A (m x m) input matrix
+ * @param[out] U (m x m) Output upper unit triangular matrix U
+ * @param[out] d (m x 1) Output vector d (D = diag(d))
+ * @param[in] m Matrix dimension m
+ *
+ */
+int udu(const float* A, float* U, float* d, const int m);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* @} */

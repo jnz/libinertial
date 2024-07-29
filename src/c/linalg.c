@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <math.h>
 #include <ctype.h> /* tolower() */
+#include <string.h> /* memset */
 
 /******************************************************************************
  * PROJECT INCLUDE FILES
@@ -135,6 +136,68 @@ void symmetricrankupdate(float* P, const float* E, int n, int m)
 
     const int result = ssyrk("U", "N", &n, &m, &alpha, (float*)E, &n, &beta, P, &n);
     assert(result == 0);
+}
+
+int udu(const float* A, float* U, float* d, const int m)
+{
+/*    A = U*diag(d)*U' decomposition
+ *    Source:
+ *      1. Golub, Gene H., and Charles F. Van Loan. "Matrix Computations." 4rd ed.,
+ *         Johns Hopkins University Press, 2013.
+ *      2. Grewal, Weill, Andrews. "Global positioning systems, inertial
+ *         navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
+ *
+ *    function [U, d] = udu(M)
+ *      [m, ~] = size(M);
+ *      U = zeros(m, m); d = zeros(m, 1);
+ *
+ *      for j = m:-1:1
+ *        for i = j:-1:1
+ *          sigma = M(i, j);
+ *          for k = j + 1:m
+ *              sigma = sigma - U(i, k) * d(k) * U(j, k);
+ *          end
+ *          if i == j
+ *              d(j) = sigma;
+ *              U(j, j) = 1; % U is a unit triangular matrix
+ *          else
+ *              U(i, j) = sigma / d(j); % off-diagonal elements of U
+ *          end
+ *        end
+ *      end
+ *    end
+ */
+    int i, j, k;
+    float sigma;
+
+    memset(U, 0, sizeof(U[0])*m*m);
+    memset(d, 0, sizeof(d[0])*m);
+
+    for (j = m-1; j>=0; j--) /* UDU decomposition */
+    {
+        for (i = j; i>=0; i--)
+        {
+            sigma = MAT_ELEM(A, i, j, m, m);
+            for (k = j+1; k < m; k++)
+            {
+                sigma -= MAT_ELEM(U, i, k, m, m) * d[k] * MAT_ELEM(U, j, k, m, m);
+            }
+            if (i == j)
+            {
+                d[j] = sigma;
+                MAT_ELEM(U, j, j, m, m) = 1.0f;
+            }
+            else
+            {
+                if ((d[j] == 0.0f) || !isfinite(d[j]))
+                {
+                    return -1;
+                }
+                MAT_ELEM(U, i, j, m, m) = sigma / d[j];
+            }
+        }
+    }
+    return 0;
 }
 
 /******************************************************************************
@@ -1738,3 +1801,4 @@ static int ssymm(char* side, char* uplo, int* m, int* n, float* alpha, float* a,
 
     return 0;
 }
+
