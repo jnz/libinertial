@@ -4,14 +4,14 @@ function [x,U,d] = kalman_udu(z,R,H,x,U,d)
 % Inputs:
 %  z   - scalar measurement
 %  R   - variance of measurement error
-%  H   - measurement sensitivity (row) vector
-%  z   - a priori estimate of state vector
+%  H   - measurement sensitivity matrix
+%  x   - a priori estimate of state vector
 %  U   - unit upper triangular factor of covariance matrix of a priori state uncertainty
 %  d   - diagonal vector with factor of covariance matrix of a priori state uncertainty
 %
 % Outputs:
 %  x   - a posteriori estimate of state vector
-%  U   - upper triangular UD factor of a posteriori state uncertainty covariance
+%  U   - upper unit triangular UD factor of a posteriori state uncertainty covariance
 %  d   - diagonal UD factor vector of a posteriori state uncertainty covariance
 %
 % References:
@@ -32,13 +32,15 @@ end
 
 end
 
-function [x,U,d] = kalman_udu_scalar(z,R,H,xin,Uin,din)
+function [x,U,d] = kalman_udu_scalar(z,R,H_line,xin,Uin,din)
+%  H_line is a line of H, i.e. the measurement sensitivity (row) vector
+
 x     = xin;      % Store inputs into outputs 
 U     = Uin;      % because algorithm does in-place
 d     = din;      % (destructive) calculation of outputs.
-a     = U'*H';    % a is not modified, but
+a     = U'*H_line';    % a is not modified, but
 b     = din.*a;   % b is modified to become unscaled Kalman gain.
-dz    = z - H*xin;
+dz    = z - H_line*xin;
 alpha = R;
 gamma = 1/alpha;
 for j=1:length(xin)

@@ -1,10 +1,10 @@
 function [x,U,D] = thornton(x,Phi,Uin,din,Gin,Q)
-% UDU' Bierman-Thornton Filter Temporal / Prediction Step
-
+% UDU' Bierman-Thornton Filter Temporal / Prediction Step.
+%
 %  Catherine Thornton's modified weighted Gram-Schmidt
 %  orthogonalization method for the predictor update of
 %  the U-D factors of the covariance matrix
-%  of estimation uncertainty in Kalman filtering, see [1].
+%  of estimation uncertainty in Kalman filtering. Source: [1].
 %
 %  P^{+} = U*D*U' = Uin * diag(din) * Uin'
 %
@@ -36,7 +36,7 @@ function [x,U,D] = thornton(x,Phi,Uin,din,Gin,Q)
 %      navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
 
 x     = Phi*x;
-[n,r] = size(Gin); % get dimensions of state(n) and process noise (r)
+[n,r] = size(Gin);
 G     = Gin;       % move to internal array for destructive updates
 U     = eye(n);    % initialize lower triangular part of U
 PhiU  = Phi*Uin;   % rows of [PhiU,G] are to be orthogonalized
