@@ -9,12 +9,12 @@ function [U, d] = udu(M)
 %  M = U * diag(d) * U'.
 %
 % Inputs:
-%   M - A square, positive semidefinite matrix of size m x m. This is the input
+%   M - A square, positive semidefinite matrix (m x m). This is the input
 %   matrix that needs to be decomposed.
 %
 % Outputs:
-%   U - An unit upper triangular matrix of size m x m.
-%   d - A vector of length m. matrix D = diag(d) so that: U*D*U' = M
+%   U - An unit upper triangular matrix (m x m).
+%   d - Diagonal vector (m x 1). matrix D = diag(d) so that: U*D*U' = M
 %
 %  The algorithm iterates from the bottom-right to the top-left of the matrix,
 %  computing elements of U and d. This approach is sometimes referred to as a
