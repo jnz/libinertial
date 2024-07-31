@@ -159,64 +159,44 @@ int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const
 }
 
 int nav_kalman_udu(float* x, float* U, float* d, const float* z, const float* R,
-                   const float* Ht, int n, int m)
+                   const float* Ht, int n, int m, float chi2_threshold, int downweight_outlier)
 {
     int retcode = 0;
-    int line = 0;
-    for (int i=0;i<m;i++) /* for each measurement */
+
+    for (int i=0;i<m;i++,Ht+=n) /* iterate over each measurement,
+                                   goto next line of H after each iteration */
     {
-        const float Rv = MAT_ELEM(R, i, i, m, m);
-        float dz = z[i];
-        matmul("N", "N", 1, 1, n, -1.0f, Ht, x, 1.0f, &dz); // dz = z - H(i,:)*x
-        int status = nav_kalman_udu_scalar(x, U, d, dz, Rv, Ht, n);
-        if (status != 0)
-        {
-            retcode = -1; /* still process rest of the measurement vector */
-        }
-        Ht += n; /* go to next column in Ht */
-    }
-    return retcode;
-}
-
-int nav_kalman_udu_robust(float* x, float* U, float* d, const float* z, const float* R,
-                          const float* Ht, int n, int m, float chi2_threshold, int downweight_outlier)
-{
-    int retcode = 0;
-    int line = 0;
-
-    float mahalanobis_dist_squared;
-    float tmp[NAV_KALMAN_MAX_STATE_SIZE];
-    float s; // for chi2 test: s = H*U*diag(d)*U'*H' + R
-             // Source:
-             // Chang, G. (2014). Robust Kalman filtering based on
-             // Mahalanobis distance as outlier judging criterion. Journal of
-             // Geodesy, 88(4), 391-401.
-
-    for (int i=0;i<m;i++,Ht+=n) /* for each measurement, goto next line of H
-                                     each iteration */
-    {
-        float Rv = MAT_ELEM(R, i, i, m, m); /// only the scalar measurement variance is needed
-        float dz = z[i]; // calculate measurement residual for current scalar measurement
+        float Rv = MAT_ELEM(R, i, i, m, m); /// get scalar measurement variance
+        float dz = z[i]; // calculate residual for current scalar measurement
         matmul("N", "N", 1, 1, n, -1.0f, Ht, x, 1.0f, &dz); // dz = z - H(i,:)*x
 
         // <robust>
-        // Calculate s = H_line*U*diag(d)*U'*H_line' + Rv
-        float HPHT = 0.0f; // calc. scalar result of H_line*U*diag(d)*U'*H_line'
-        matmul("N", "N", 1, n, n, 1.0f, Ht, U, 0.0f, tmp); // tmp = H(i,:) * U
-        for (int j=0;j<n;j++)
+        if (chi2_threshold > 0.0f)
         {
-            HPHT += tmp[j]*tmp[j]*d[j];
-        }
-        s = HPHT + Rv;
-        mahalanobis_dist_squared = dz*dz/s;
-        if (mahalanobis_dist_squared > chi2_threshold)
-        {
-            if (!downweight_outlier)
+            float tmp[NAV_KALMAN_MAX_STATE_SIZE];
+            float s; // for chi2 test: s = H*U*diag(d)*U'*H' + R
+                     // Chang, G. (2014). Robust Kalman filtering based on
+                     // Mahalanobis distance as outlier judging criterion.
+                     // Journal of Geodesy, 88(4), 391-401.
+
+            float HPHT = 0.0f; // calc. scalar result of H_line*U*diag(d)*U'*H_line'
+            matmul("N", "N", 1, n, n, 1.0f, Ht, U, 0.0f, tmp); // tmp = H(i,:) * U
+            for (int j = 0; j < n; j++)
             {
-                continue; //
+                HPHT += tmp[j] * tmp[j] * d[j];
             }
-            const float f = mahalanobis_dist_squared / chi2_threshold;
-            Rv = (f - 1.0f)*HPHT + f*Rv; // downweight measurement
+            s = HPHT + Rv;
+            const float mahalanobis_dist_sq = dz * dz / s;
+            if (mahalanobis_dist_sq > chi2_threshold) // potential outlier?
+            {
+                if (!downweight_outlier)
+                {
+                    continue; // just skip this measurement
+                }
+                // process this measurement, but reduce the measurement precision
+                const float f = mahalanobis_dist_sq / chi2_threshold;
+                Rv            = (f - 1.0f) * HPHT + f * Rv;
+            }
         }
         // </robust>
 
@@ -227,7 +207,6 @@ int nav_kalman_udu_robust(float* x, float* U, float* d, const float* z, const fl
         }
     }
     return retcode;
-
 }
 
 /* @} */

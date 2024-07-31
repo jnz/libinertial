@@ -134,7 +134,7 @@ static int kalman_test_bierman(void)
         z[1] = distribution(generator) + bias;
         z[2] = distribution(generator) + bias;
 
-        nav_kalman_udu(x, U, d, z, R, Ht, 4, 3);
+        nav_kalman_udu(x, U, d, z, R, Ht, 4, 3, 0.0, 0);
 
         xr[0] = x[0];
         xr[1] = x[1];
