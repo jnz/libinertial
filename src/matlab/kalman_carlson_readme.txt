@@ -6,24 +6,32 @@ Jan Zwiener (jan@zwiener.org)
 Start by a given state covariance matrix Qxx.
 Perform
 
-    Cxx = chol(Qxx)';
+    Cxx = chol(Qxx)'; % note the transpose
 
 where Cxx*Cxx' = Qxx;
 
 Call
-    [xout,CxxOut] = kalman_carlson(z,R,H,xin,CxxIn)
+
+    [x,Cxx] = kalman_carlson(z,R,H,x,Cxx);
+
 to update with a scalar measurement 'z'.
 If you have multiple measurements, process them individually.
-If the measurements are correlated, you have to decorrelate them.
+If the measurements are correlated, they are decorrelated inside
+kalman_carlson(...) first with:
+
+    [G] = chol(R); % G'*G = R
+	zdecorr = (G')\z;
+    Hdecorr = (G')\H;
+    Rdecorr = eye(length(z));
 
 The prediction step/temporal update of the Cxx matrix is done with the
 
-    [CxxOut] = kalman_carlson_predict(CxxIn, phi, G, Cq)
+    [Cxx] = kalman_carlson_predict(Cxx, phi, G, Cq)
 
 Normal form:
-    Qxx(-) = phi*Qxx(+)*phi' + G*Qnoise*G'
+    Qxx^(-) = phi*Qxx^(+)*phi' + G*Qnoise*G'
 
-    Cq*Cq' = Qnoise (e.g. from srkf_utchol(...)
+    Cq*Cq' = Qnoise -> from chol(...)' (note the transpose)
 
 
 Example:
@@ -50,4 +58,3 @@ Example:
 
     % Calculate Qxx if required
     Qxx = Cxx*Cxx';
-
