@@ -122,8 +122,8 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     return 0;
 }
 
-static int nav_bierman_line(float* x, float* U, float* d, const float dz, const
-                            float R, const float* H_line, int n)
+int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const
+                       float R, const float* H_line, int n)
 {
     float a[NAV_KALMAN_MAX_STATE_SIZE];
     float b[NAV_KALMAN_MAX_STATE_SIZE];
@@ -170,7 +170,7 @@ int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float
         const float Rv = MAT_ELEM(R, i, i, m, m);
         float dz = z[i];
         matmul("N", "N", 1, 1, n, -1.0f, Ht, x, 1.0f, &dz); // dz = z - H(i,:)*x
-        int status = nav_bierman_line(x, U, d, dz, Rv, Ht, n);
+        int status = nav_bierman_scalar(x, U, d, dz, Rv, Ht, n);
         if (status != 0)
         {
             retcode = -1; /* still process rest of the measurement vector */
@@ -179,6 +179,5 @@ int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float
     }
     return retcode;
 }
-
 
 /* @} */

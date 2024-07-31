@@ -2,17 +2,17 @@ function [x,U,d] = kalman_udu(z,R,H,x,U,d)
 % UDU' Bierman Filter Observation Step
 %
 % Inputs:
-%  z   - scalar measurement
-%  R   - variance of measurement error
-%  H   - measurement sensitivity matrix
-%  x   - a priori estimate of state vector
-%  U   - unit upper triangular factor of covariance matrix of a priori state uncertainty
-%  d   - diagonal vector with factor of covariance matrix of a priori state uncertainty
+%  z   - measurement vector (m x 1)
+%  R   - variance of measurement error (m x m)
+%  H   - measurement sensitivity matrix (m x n)
+%  x   - a priori estimate of state vector (n x 1)
+%  U   - unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
+%  d   - diagonal vector with factor of covariance matrix of a priori state uncertainty (n x 1)
 %
 % Outputs:
-%  x   - a posteriori estimate of state vector
-%  U   - upper unit triangular UD factor of a posteriori state uncertainty covariance
-%  d   - diagonal UD factor vector of a posteriori state uncertainty covariance
+%  x   - a posteriori estimate of state vector (n x 1)
+%  U   - upper unit triangular UD factor of a posteriori state uncertainty covariance (n x n)
+%  d   - diagonal UD factor vector of a posteriori state uncertainty covariance (n x 1)
 %
 % References:
 %   1. Grewal, Weill, Andrews. "Global positioning systems, inertial
@@ -33,7 +33,18 @@ end
 end
 
 function [x,U,d] = kalman_udu_scalar(z,R,H_line,xin,Uin,din)
-%  H_line is a line of H, i.e. the measurement sensitivity (row) vector
+% Inputs:
+%  z   - scalar measurement (1 x 1)
+%  R   - variance of measurement error (1 x 1)
+%  H_line - row of measurement sensitivity matrix (m x 1)
+%  x   - a priori estimate of state vector (n x 1)
+%  U   - unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
+%  d   - diagonal vector with factor of covariance matrix of a priori state uncertainty (n x 1)
+%
+% Outputs:
+%  x   - a posteriori estimate of state vector (n x 1)
+%  U   - upper unit triangular UD factor of a posteriori state uncertainty covariance (n x n)
+%  d   - diagonal UD factor vector of a posteriori state uncertainty covariance (n x 1)
 
 x     = xin;      % Store inputs into outputs 
 U     = Uin;      % because algorithm does in-place

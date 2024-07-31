@@ -63,10 +63,10 @@ extern "C"
 
     /** @brief Kalman Filter Routine.
      *
-     * @param[in,out] x System state (dimension n)
-     * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty
-     * @param[in] dz Difference between measurement and expected measurement: z - H*x (dimension m)
-     * @param[in] R Full covariance matrix of measurement uncertainty (dimension m x m)
+     * @param[in,out] x System state (n x 1)
+     * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty (n x n)
+     * @param[in] dz Measurement residual vector: measurement vs. expected measurement: z - H*x (m x 1)
+     * @param[in] R Full covariance matrix of measurement uncertainty (m x m)
      * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
      * @param[in] n Number of state variables
      * @param[in] m Number of measurements
@@ -78,8 +78,36 @@ extern "C"
     int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht,
                    int n, int m);
 
-    int nav_kalman_bierman(float* x, float* U, float* d, const float* dz, const float* R, const
-                    float* Ht, int n, int m);
+    /** @brief Square Root Kalman Filter Routine for linear system.
+     *
+     * @param[in,out] x System state (n x 1)
+     * @param[in,out] U Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
+     * @param[in,out] d Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x 1)
+     * @param[in] z Measurement vector: z = H*x (m x 1)
+     * @param[in] R Full covariance matrix of measurement uncertainty (m x m)
+     * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
+     * @param[in] n Number of state variables
+     * @param[in] m Number of measurements
+     *
+     * @return 0 on success, -1 on error.
+     */
+    int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float* R,
+                           const float* Ht, int n, int m);
+
+    /** @brief Square Root Kalman Filter Routine for scalar measurement.
+     *
+     * @param[in,out] x System state (n x 1)
+     * @param[in,out] U Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
+     * @param[in,out] d Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x 1)
+     * @param[in] dz Scalar measurement residual: dz = z - H*x (1 x 1)
+     * @param[in] R Scalar covariance of measurement uncertainty (1 x 1)
+     * @param[in] H_line Row of measurement sensitivity matrix (n x 1)
+     * @param[in] n Number of state variables
+     *
+     * @return 0 on success, -1 on error.
+     */
+    int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const float R,
+                           const float* H_line, int n);
 
 #ifdef __cplusplus
 }
