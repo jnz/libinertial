@@ -28,8 +28,6 @@ assert( ( (size(P,1)==size(P,2) ) && ... % symmetric covariance matrix
 zdecorr = (G')\z;
 Hdecorr = (G')\H;
 
-chi2sum = 0.0;
-
 for i=1:length(zdecorr)
     Hline = Hdecorr(i, :);
 
