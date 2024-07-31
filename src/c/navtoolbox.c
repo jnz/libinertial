@@ -122,8 +122,8 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     return 0;
 }
 
-int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const
-                       float R, const float* H_line, int n)
+int nav_udu_scalar(float* x, float* U, float* d, const float dz, const
+                   float R, const float* H_line, int n)
 {
     float a[NAV_KALMAN_MAX_STATE_SIZE];
     float b[NAV_KALMAN_MAX_STATE_SIZE];
@@ -141,7 +141,7 @@ int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const
         float beta=alpha;
         alpha += a[j]*b[j];
         float lambda = -a[j]*gamma;
-        gamma = 1.0f/alpha;
+        gamma = 1.0f/alpha; // FIXME test if this is possible and return -1 if not
         d[j] *= beta*gamma;
         for (int i=0;i<j;i++)
         {
@@ -158,8 +158,8 @@ int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const
     return 0;
 }
 
-int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float* R,
-                       const float* Ht, int n, int m)
+int nav_kalman_udu(float* x, float* U, float* d, const float* z, const float* R,
+                   const float* Ht, int n, int m)
 {
     int retcode = 0;
     int line = 0;
@@ -168,7 +168,7 @@ int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float
         const float Rv = MAT_ELEM(R, i, i, m, m);
         float dz = z[i];
         matmul("N", "N", 1, 1, n, -1.0f, Ht, x, 1.0f, &dz); // dz = z - H(i,:)*x
-        int status = nav_bierman_scalar(x, U, d, dz, Rv, Ht, n);
+        int status = nav_udu_scalar(x, U, d, dz, Rv, Ht, n);
         if (status != 0)
         {
             retcode = -1; /* still process rest of the measurement vector */
@@ -176,6 +176,58 @@ int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float
         Ht += n; /* go to next column in Ht */
     }
     return retcode;
+}
+
+int nav_kalman_udu_robust(float* x, float* U, float* d, const float* z, const float* R,
+                          const float* Ht, int n, int m, float chi2_threshold, int downweight_outlier)
+{
+    int retcode = 0;
+    int line = 0;
+
+    float mahalanobis_dist_squared;
+    float m[NAV_KALMAN_MAX_STATE_SIZE]; // temp vector
+    float s; // for chi2 test: s = H*U*diag(d)*U'*H' + R
+             // Source:
+             // Chang, G. (2014). Robust Kalman filtering based on
+             // Mahalanobis distance as outlier judging criterion. Journal of
+             // Geodesy, 88(4), 391-401.
+
+    for (int i=0;i<m;i++,Ht+=n) /* for each measurement, goto next line of H
+                                     each iteration */
+    {
+        float Rv = MAT_ELEM(R, i, i, m, m); /// only the scalar measurement variance is needed
+        float dz = z[i]; // calculate measurement residual for current scalar measurement
+        matmul("N", "N", 1, 1, n, -1.0f, Ht, x, 1.0f, &dz); // dz = z - H(i,:)*x
+
+        // <robust>
+        // Calculate s = H_line*U*diag(d)*U'*H_line' + Rv
+        float HPHT = 0.0f;
+        matmul("N", "N", 1, n, n, 1.0f, Ht, U, 0.0f, m); // m = H(i,:) * U
+        for (int j=0;j<n;j++)
+        {
+            HPHT += m[j]*m[j]*d[j];
+        }
+        s = HPHT + Rv;
+        mahalanobis_dist_squared = dz*dz/s;
+        if (mahalanobis_dist_squared > chi2_threshold)
+        {
+            if (!downweight_outlier)
+            {
+                continue; //
+            }
+            const float f = mahalanobis_dist_squared / chi2_threshold;
+            Rv = (f - 1.0f)*HPHT + f*Rv; // downweight measurement
+        }
+        // </robust>
+
+        int status = nav_udu_scalar(x, U, d, dz, Rv, Ht, n);
+        if (status != 0)
+        {
+            retcode = -1; // still process rest of the measurement vector
+        }
+    }
+    return retcode;
+
 }
 
 /* @} */

@@ -91,8 +91,26 @@ extern "C"
      *
      * @return 0 on success, -1 on error.
      */
-    int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float* R,
-                           const float* Ht, int n, int m);
+    int nav_kalman_udu(float* x, float* U, float* d, const float* z, const float* R,
+                       const float* Ht, int n, int m);
+
+    /** @brief Robust Square Root Kalman Filter routine for linear system.
+     *
+     * @param[in,out] x System state (n x 1)
+     * @param[in,out] U Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
+     * @param[in,out] d Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x 1)
+     * @param[in] z Measurement vector: z = H*x (m x 1)
+     * @param[in] R Full covariance matrix of measurement uncertainty (m x m)
+     * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
+     * @param[in] n Number of state variables
+     * @param[in] m Number of measurements
+     * @param[in] chi2_threshold Scalar threshold for outlier classification
+     * @param[in] downweight_outlier If set to 0, measurements classified as outliers are skipped. If set to 1 then
+     *
+     * @return 0 on success, -1 on error.
+     */
+    int nav_kalman_udu_robust(float* x, float* U, float* d, const float* z, const float* R,
+                              const float* Ht, int n, int m, float chi2_threshold, int downweight_outlier);
 
     /** @brief Square Root Kalman Filter Routine for scalar measurement.
      *
@@ -103,11 +121,9 @@ extern "C"
      * @param[in] R Scalar covariance of measurement uncertainty (1 x 1)
      * @param[in] H_line Row of measurement sensitivity matrix (n x 1)
      * @param[in] n Number of state variables
-     *
-     * @return 0 on success, -1 on error.
      */
-    int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const float R,
-                           const float* H_line, int n);
+    void nav_udu_scalar(float* x, float* U, float* d, const float dz, const float R,
+                        const float* H_line, int n);
 
 #ifdef __cplusplus
 }
