@@ -49,6 +49,7 @@ function [U, d] = udu(M)
                 d(j) = sigma;
                 U(j, j) = 1; % U is a unit triangular matrix
             else
+                assert(d(j) > 0);
                 U(i, j) = sigma / d(j); % off-diagonal elements of U
             end
         end
