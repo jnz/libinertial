@@ -1,4 +1,4 @@
-function [x, P] = kalman_robust(x, P, dz, R, H, chi2_threshold)
+function [x, P] = kalman_robust(x, P, dz, R, H, chi2_threshold,reject_outliers)
 %KALMAN_ROBUST Robust Kalman Filter based on:
 %   Chang, G. (2014). Robust Kalman filtering based on Mahalanobis distance
 %   as outlier judging criterion. Journal of Geodesy, 88(4), 391-401.
@@ -13,9 +13,14 @@ function [x, P] = kalman_robust(x, P, dz, R, H, chi2_threshold)
 %
 % Optional:
 % chi2_threshold 1x1 Threshold (>0) to scale down measurements.
-% Can be computed with the chi-square inverse cumulative distribution
-% function ("chi2inv") for e.g. alpha=0.05:
-%   chi2_threshold = chi2inv(1-alpha, length(dz));
+%                Can be computed with the chi-square inverse cumulative
+%                distribution:
+
+%                function ("chi2inv") for e.g. alpha=0.05:
+%                  chi2_threshold = chi2inv(1-alpha, length(dz));
+%
+% reject_outliers - If set to true, measurements classified as outliers
+%                   are skipped (true/false).
 %
 % By default a table for significance level alpha = 5% is added to this
 % function.  If the measurement difference vector is larger than 20, a
@@ -32,11 +37,11 @@ assert( ( (size(P,1)==size(P,2) ) && ... % symmetric covariance matrix
           (size(R,1)==size(R,2) ) && ...
           (size(H,1)==size(dz,1) ) && ...
           (size(H,2)==size(x,1) ) && ...
-          (nargin >= 5 && nargin <= 6) ), 'Invalid arguments');
+          (nargin >= 5 && nargin <= 7) ), 'Invalid arguments');
 
 if (nargin < 6)
     % precomputed chi2 table for up to m=20 observations
-    % (degree of freedom) by chi2inv(0.95, 1:20) function with 
+    % (degree of freedom) by chi2inv(0.95, 1:20) function with
     % significance level alpha = 0.05 (5% - 95%)
     table = [  3.8415  5.9915  7.8147  9.4877 11.0705 12.5916 14.0671 ...
               15.5073 16.9190 18.3070 19.6751 21.0261 22.3620 23.6848 ...
@@ -45,6 +50,11 @@ if (nargin < 6)
         error('Measurement vector y too big.');
     end
     chi2_threshold = table(length(dz));
+else
+    assert(chi2_threshold > 0);
+end
+if (nargin < 7)
+    reject_outliers = false; % by default downgrade potential outliers
 end
 
 % Covariance of the observation prediction (= H*x in the linear case)
@@ -58,6 +68,10 @@ mahalanobis_dist_squared = (dz'/P_predicted)*dz;
 % chi2_threshold is alpha percent:
 %   P(mahalanobis_dist_squared > chi2_threshold) = alpha%
 if (mahalanobis_dist_squared > chi2_threshold)
+    if reject_outliers
+        return % don't update the state with this measurement vector
+    end
+
     % scale by "f" to lower the influence of the observation
     f = mahalanobis_dist_squared / chi2_threshold;
     Rf = (f - 1)*HPHT + f*R; % Rf is the new scaled obs. covariance R
