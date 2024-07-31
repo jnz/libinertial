@@ -189,7 +189,7 @@ int udu(const float* A, float* U, float* d, const int m)
             }
             else
             {
-                if ((d[j] == 0.0f) || !isfinite(d[j]))
+                if ((d[j] <= 0.0f) || !isfinite(d[j])) /* matrix is not positive definite in this case */
                 {
                     return -1;
                 }
