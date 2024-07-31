@@ -9,6 +9,8 @@ function [x,U,d] = kalman_udu_robust(z,R,H,x,U,d,chi2_threshold,reject_outliers)
 %  U   - unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
 %  d   - diagonal vector with factor of covariance matrix of a priori state uncertainty (n x 1)
 %  chi2_threshold - Scalar threshold (>0) Threshold for outlier detection (1 x 1)
+%                   Set to 0 to disable. 3.8415 for 95%, 6.6349 for 99%.
+%                   Calculate with chi2inv(0.95, 1) and chi2inv(0.99, 1)
 %  reject_outliers - If set to true, measurements classified as outliers are skipped (true/false)
 %
 % Outputs:
@@ -26,6 +28,7 @@ function [x,U,d] = kalman_udu_robust(z,R,H,x,U,d,chi2_threshold,reject_outliers)
 % incorporate this measurement in our estimation process, but it is more
 % resistant to outliers.
 
+% check if measurements need to be decorrelated:
 isdiagonal = isequal(R, diag(diag(R)));
 if (isdiagonal == false)
     [G] = chol(R); % G'*G = R
@@ -33,41 +36,45 @@ if (isdiagonal == false)
     Hdecorr = (G')\H;
     Rdecorr = eye(length(z));
 else
+    % measurements are uncorrelated, process as is
     zdecorr = z;
     Hdecorr = H;
     Rdecorr = R;
 end
 
-if (nargin < 7)
-    % Default significance level alpha = 0.05 (5% - 95%)
-    chi2_threshold = 3.8415; % chi2inv(0.95, 1);
-end
 if (nargin < 8)
     reject_outliers = false; % by default downgrade potential outliers
+end
+if (nargin < 7)
+    chi2_threshold = 0; % disable robust module below
 end
 
 % Process measurements independently:
 for i=1:size(H,1)
 
-    HPHT = Hdecorr(i,:)*U*diag(d)*U'*Hdecorr(i,:)';
-    S = HPHT + Rdecorr(i,i);
+    Rf = Rdecorr(i,i); % Accept the observation directly
     dz = zdecorr(i) - Hdecorr(i,:)*x;
 
-    % square of the Mahalanobis distance from observation to the
-    % predicted observation squared: (= dz'*inv(P_predicted)*dz)
-    mahalanobis_dist_squared = (dz*dz)/S;
-    if (mahalanobis_dist_squared > chi2_threshold)
-        if reject_outliers
-            continue % skip this scalar measurement
-        end
+    % <robust>
+    if (chi2_threshold > 0)
+        HPHT = Hdecorr(i,:)*U*diag(d)*U'*Hdecorr(i,:)';
+        S = HPHT + Rdecorr(i,i);
 
-        % scale by "f" to lower the influence of the observation
-        f = mahalanobis_dist_squared / chi2_threshold;
-        Rf = (f - 1)*HPHT + f*Rdecorr(i,i); % Rf is the new scaled obs. covariance R
-        % P_predicted = f*P_predicted; % equiv. to P_predicted = H*P*H' + Rf;
-    else
-        Rf = Rdecorr(i,i); % Accept the observation directly
+        % square of the Mahalanobis distance from observation to the
+        % predicted observation squared: (= dz'*inv(P_predicted)*dz)
+        mahalanobis_dist_squared = (dz*dz)/S;
+        if (mahalanobis_dist_squared > chi2_threshold)
+            if reject_outliers
+                continue % skip this scalar measurement
+            end
+
+            % scale by "f" to lower the influence of the observation
+            f = mahalanobis_dist_squared / chi2_threshold;
+            Rf = (f - 1)*HPHT + f*Rf; % Rf is the new scaled obs. covariance R(i,i)
+            % P_predicted = f*P_predicted; % equiv. to P_predicted = H*P*H' + Rf;
+        end
     end
+    % </robust>
 
     [x,U,d] = kalman_udu_scalar(dz,Rf,Hdecorr(i,:),x,U,d);
 end
