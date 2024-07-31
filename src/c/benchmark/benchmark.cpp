@@ -135,12 +135,7 @@ static int kalman_test_bierman(void)
         z[1] = distribution(generator) + bias;
         z[2] = distribution(generator) + bias;
 
-        // FIXME calc dz = z - H*x
-        dz[0] = z[0] - (x[0] + x[3]);
-        dz[1] = z[1] - (x[1] + x[3]);
-        dz[2] = z[2] - (x[2] + x[3]);
-
-        nav_kalman_bierman(x, U, d, dz, R, Ht, 4, 3);
+        nav_kalman_bierman(x, U, d, z, R, Ht, 4, 3);
 
         xr[0] = x[0];
         xr[1] = x[1];

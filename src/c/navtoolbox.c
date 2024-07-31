@@ -159,7 +159,7 @@ int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const
 }
 
 int nav_kalman_bierman(float* x, float* U, float* d, const float* z, const float* R,
-    const float* Ht, int n, int m)
+                       const float* Ht, int n, int m)
 {
     int retcode = 0;
     int line = 0;
