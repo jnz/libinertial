@@ -122,8 +122,8 @@ extern "C"
      * @param[in] H_line Row of measurement sensitivity matrix (n x 1)
      * @param[in] n Number of state variables
      */
-    void nav_udu_scalar(float* x, float* U, float* d, const float dz, const float R,
-                        const float* H_line, int n);
+    int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const float R,
+                              const float* H_line, int n);
 
 #ifdef __cplusplus
 }

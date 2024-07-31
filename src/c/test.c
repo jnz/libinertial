@@ -289,7 +289,7 @@ static void testnavtoolbox(void)
         result = udu(P, U, d, 4);
         assert(result == 0);
 
-        result = nav_kalman_bierman(x, U, d, z, R, Ht, 4, 3);
+        result = nav_kalman_udu(x, U, d, z, R, Ht, 4, 3);
 
         const float xexp[4]     = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
         const float threshold   = 1.0e-04f;
