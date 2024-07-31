@@ -127,7 +127,6 @@ int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const
 {
     float a[NAV_KALMAN_MAX_STATE_SIZE];
     float b[NAV_KALMAN_MAX_STATE_SIZE];
-
     float alpha = R;
     float gamma = 1.0f/alpha;
 
@@ -144,8 +143,7 @@ int nav_bierman_scalar(float* x, float* U, float* d, const float dz, const
         float lambda = -a[j]*gamma;
         gamma = 1.0f/alpha;
         d[j] *= beta*gamma;
-
-        for (int i=0;i<j-1;i++)
+        for (int i=0;i<j;i++)
         {
             beta = MAT_ELEM(U, i, j, n, n);
             MAT_ELEM(U, i, j, n, n) = beta + b[i]*lambda;
