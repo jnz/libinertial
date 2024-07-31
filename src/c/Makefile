@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -O2 -Wall -Wdouble-promotion -fno-math-errno -I/usr/include/eigen3
-SOURCES = navtoolbox.c test.c linalg.c benchmark/benchmark.cpp ../cpp/navtoolboxeigen.cpp
-HEADERS = navtoolbox.h linalg.h benchmark/benchmark.h
+SOURCES = navtoolbox.c test.c linalg.c blasmini.c benchmark/benchmark.cpp ../cpp/navtoolboxeigen.cpp
+HEADERS = navtoolbox.h linalg.h blasmini.h benchmark/benchmark.h
 OUTPUT = navtest
 LDFLAGS = -lm -lstdc++
 
