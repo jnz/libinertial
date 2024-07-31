@@ -1,12 +1,12 @@
-function [x,CxxOut] = kalman_carlson(z,R,H,xin,CxxIn)
-% Carlson Cholesky Filter Filter Observation Step
+function [x,Cxx] = kalman_carlson(z,R,H,x,Cxx)
+% Carlson Cholesky filter observation step for linear systems
 %
 % Inputs:
 %  z     - scalar measurement
 %  R     - variance of measurement error
 %  H     - measurement sensitivity matrix
-%  xin   - a priori estimate of state vector
-%  CxxIn - upper triangular Cholesky factor of covariance matrix of a priori
+%  x     - a priori estimate of state vector
+%  Cxx   - upper triangular Cholesky factor of covariance matrix of a priori
 %          state uncertainty
 %
 % Outputs:
@@ -19,20 +19,25 @@ function [x,CxxOut] = kalman_carlson(z,R,H,xin,CxxIn)
 %      navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
 
 isdiagonal = isequal(R, diag(diag(R)));
-assert(isdiagonal); % Measurements must not be correlated
-
-% [G] = chol(R); % G'*G = R
-% zdecorr = (G')\z;
-% Hdecorr = (G')\H;
+if (isdiagonal == false)
+    [G] = chol(R); % G'*G = R
+    zdecorr = (G')\z;
+    Hdecorr = (G')\H;
+    Rdecorr = eye(length(z));
+else
+    zdecorr = z;
+    Hdecorr = H;
+    Rdecorr = R;
+end
 
 % Process measurements independently:
 for i=1:size(H,1)
-    [x,U,d] = kalman_carlson_scalar(z(i),R(i,i),H(i,:),x,U,d);
+    [x,Cxx] = kalman_carlson_scalar(zdecorr(i),Rdecorr(i,i),Hdecorr(i,:),x,Cxx);
 end
 
 end
 
-function [x,CxxOut] = kalman_carlson_scalar(z,R,H,xin,CxxIn)
+function [x,Cxx] = kalman_carlson_scalar(z,R,H,xin,CxxIn)
 C     = CxxIn;
 alpha = R;
 delta = z;
