@@ -58,6 +58,9 @@ static int kalman_test1(void)
 
 static int kalman_test_eigen(void)
 {
+    const int StateDim = 4;
+    const int MeasDim = 3;
+
     const float sigma = 0.05f;
     const float bias  = 0.66f;
 
@@ -72,13 +75,14 @@ static int kalman_test_eigen(void)
     float P_data[4 * 4] = { 0.94f, 0, 0, 0, 0, 0.94f, 0, 0, 0, 0, 0.94f, 0, 0, 0, 0, 9.84f };
     // </kalman filter>
     // Convert the arrays to Eigen variables with dynamic sizes
-    MatrixXf            R  = MatrixXf::Map(R_data, 3, 3);
-    MatrixXf            Ht = MatrixXf::Map(Ht_data, 4, 3);
-    MatrixXf            H  = Ht.transpose(); // Transpose to get H
-    VectorXf            x  = VectorXf::Map(x_data, 4);
-    MatrixXf            P  = MatrixXf::Map(P_data, 4, 4);
-    Matrix<float, 3, 1> z;
-    Matrix<float, 3, 1> dz;
+    Matrix<float, MeasDim, MeasDim> R = Matrix<float, MeasDim, MeasDim>::Map(R_data);
+    Matrix<float, StateDim, 1> x = Matrix<float, StateDim, 1>::Map(x_data);
+    Matrix<float, StateDim, StateDim> P = Matrix<float, StateDim, StateDim>::Map(P_data);
+    Matrix<float, StateDim, MeasDim> Ht = Matrix<float, StateDim, MeasDim>::Map(Ht_data);
+    Matrix<float, MeasDim, StateDim>  H  = Ht.transpose();
+
+    Matrix<float, MeasDim, 1> z;
+    Matrix<float, MeasDim, 1> dz;
 
     volatile float xr[4] = { 0, 0, 0, 0 }; /* volatile: make sure code is not optimized away */
 
@@ -90,7 +94,7 @@ static int kalman_test_eigen(void)
         z(2) = distribution(generator) + bias;
 
         dz = z - H * x;
-        nav_kalman_eigen(x, P, dz, R, H);
+        nav_kalman_eigen<float, StateDim, MeasDim>(x, P, dz, R, H);
 
         xr[0] = x(0);
         xr[1] = x(1);
