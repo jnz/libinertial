@@ -23,8 +23,12 @@
  * DEFINES
  ******************************************************************************/
 
-#define NAV_KALMAN_MAX_STATE_SIZE 32
-#define NAV_KALMAN_MAX_MEASUREMENTS 3
+#ifndef NAV_KALMAN_MAX_STATE_SIZE
+#define NAV_KALMAN_MAX_STATE_SIZE 32 /* kalman filter scratchpad buf size */
+#endif
+#ifndef NAV_KALMAN_MAX_MEASUREMENTS
+#define NAV_KALMAN_MAX_MEASUREMENTS 3 /* kalman filter scratchpad buf size */
+#endif
 
 /******************************************************************************
  * TYPEDEFS
