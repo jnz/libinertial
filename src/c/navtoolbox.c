@@ -137,7 +137,7 @@ int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const
     matmul("T", "N", n, 1, n, 1.0f, U, H_line, 0.0f, a); // a = U'*H'
     for (int j=0;j<n;j++)
     {
-        b[j] = d[j]*a[j]; // b = diag(d)*a
+        b[j] = d[j]*a[j]; // b = D*a = diag(d)*a
     }
 
     for (int j=0;j<n;j++)

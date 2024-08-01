@@ -1,6 +1,7 @@
 function [] = testcasegen()
 
 kalman_udu_testcase();
+kalman_udu_robust_testcase();
 
 end
 
@@ -29,3 +30,29 @@ dexp
 
 end
 
+function [] = kalman_udu_robust_testcase()
+
+A = [1 1.2; 1.2 1];
+
+x = [10; -5];
+P = A*diag([0.1^2, 10.0^2])*A';
+H = [1 -0.5; 0.1 5.0];
+z = H*x - [0; 100]; % add outlier
+
+B = [1.0 0.75; 0.2 5.0];
+R = B*diag([0.25^2 1.5^2])*B';
+dz = z - H*x;
+
+[U, d] = udu(P);
+chi2_threshold = 3.8415;
+[x_robust_exp,U_exp,d_exp] = kalman_udu_robust(z,R,H,x,U,d,chi2_threshold,false);
+P
+H
+x
+z
+R
+x_robust_exp
+U_exp'
+d_exp
+
+end
