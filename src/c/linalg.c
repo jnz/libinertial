@@ -172,8 +172,9 @@ int udu(const float* A, float* U, float* d, const int m)
             }
             else
             {
-                if ((d[j] <= 0.0f) || !isfinite(d[j])) /* matrix is not positive definite in this case */
+                if ((d[j] <= 0.0f) || !isfinite(d[j]))
                 {
+                    /* matrix is not positive definite if d < 0 */
                     return -1;
                 }
                 MAT_ELEM(U, i, j, m, m) = sigma / d[j];
