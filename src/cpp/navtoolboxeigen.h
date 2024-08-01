@@ -58,20 +58,12 @@ int nav_kalman_eigen(
     const Eigen::Matrix<Scalar, MeasDim, MeasDim>& R,
     const Eigen::Matrix<Scalar, MeasDim, StateDim>& H)
 {
-    // Vanilla implementation:
-    // -----------------------
-    // MatrixXf S = H * P * H.transpose() + R;
-    // MatrixXf K = P * H.transpose() * S.inverse();
-    //          x = x + K * dz;
-    // MatrixXf I = MatrixXf::Identity(x.size(), x.size());
-    //          P = (I - K * H) * P;
-
     // Takasu formulation:
     Eigen::Matrix<Scalar, StateDim, MeasDim> D;
     Eigen::Matrix<Scalar, MeasDim, MeasDim> L = R; // L is used as a temp matrix and preloaded with R
 
     // (1) D = P * H'
-    D.noalias() = P.selfadjointView<Eigen::Upper>() * H.transpose();
+    D.noalias() = P.template selfadjointView<Eigen::Upper>() * H.transpose();
     // (2) L = H * D + R
     L.noalias() += H * D;
     // (3) L = chol(L)
@@ -83,14 +75,14 @@ int nav_kalman_eigen(
     L = lltOfL.matrixL();
 
     // (4) E = D * (L')^-1
-    Eigen::Matrix<Scalar, StateDim, MeasDim> E = L.triangularView<Eigen::Lower>().solve(D.transpose()).transpose();
+    Eigen::Matrix<Scalar, StateDim, MeasDim> E = L.template triangularView<Eigen::Lower>().solve(D.transpose()).transpose();
 
     // (5) P = P - E * E'
-    P.selfadjointView<Eigen::Upper>().rankUpdate(E, -1);
+    P.template selfadjointView<Eigen::Upper>().rankUpdate(E, -1);
 
     // (6) K = E * L^-1
     Eigen::Matrix<Scalar, StateDim, MeasDim> K =
-        L.transpose().triangularView<Eigen::Upper>().solve(E.transpose()).transpose();
+        L.transpose().template triangularView<Eigen::Upper>().solve(E.transpose()).transpose();
 
     x.noalias() += K * dz;
 
