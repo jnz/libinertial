@@ -154,6 +154,7 @@ int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const
             b[i] += b[j]*beta;
         }
     }
+
     for (int j=0;j<n;j++)
     {
         x[j] += gamma*dz*b[j];
@@ -211,6 +212,26 @@ int nav_kalman_udu(float* x, float* U, float* d, const float* z, const float* R,
         }
     }
     return retcode;
+}
+
+int decorrelate(float* z, float* Ht, float* R, int n, int m)
+{
+    /* Basic decorrelation in MATLAB
+    [G] = chol(R); % G'*G = R
+    zdecorr = (G')\z;
+    Hdecorr = (G')\H;
+    Rdecorr = eye(length(z)); */
+
+    // in-place cholesky so that L*L' = R:
+    int result = cholesky(R, m, 0/* 0 means: fill upper part with zeros */);
+    if (result != 0) { return -1; }
+    // L*H_decorr = H
+    // (L*H_decorr)' = H'
+    // H_decorr'*L' = H' solve for H_decorr
+    trisolveright(R/*L*/, Ht, m, n, "T");
+    trisolve(R/*L*/, z, m, 1, "N");
+
+    return 0;
 }
 
 /* @} */

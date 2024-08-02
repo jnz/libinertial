@@ -109,6 +109,30 @@ extern "C"
     int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const float R,
                               const float* H_line, int n);
 
+    /** @brief Decorrelate measurements. For a given covariance matrix R of correlated measurements,
+     * calculate a vector of decorrelated measurements (and the matching H-matrix) so that
+     * the new covariance is an identity matrix.
+     *
+     * Note: If R only has diagonal elements, a call to this function does not help.
+     *
+     * @param[in,out] z Vector of correlated measurements (m x 1).
+     * @param[in,out] Ht Transposed measurement sensitivity matrix / design matrix so that z = Ht'*x (n x m).
+     * @param[in,out] R Measurement covariance matrix, replaced in-place by chol(R) (m x m).
+     *                  So the input is R, overwritten with L such that L*L'=R.
+     * @param[in] n Number of columns in H (for a Kalman filter: length of state vector x).
+     * @param[in] m Number of measurements in z.
+     *
+     * If Ht and R do not change, subsequently only measurements z need to be decorrelated.
+     * As the input R is replaced by L (such that L*L' = R), L can be reused to
+     * decorrelate further measurements:
+     *
+     *     trisolve(L, z, m, 1, "N");
+     *
+     * @return 0 if successful, if -1 state of z and H is not guaranteed to be
+     *           consistent and must be discarded.
+     */
+    int decorrelate(float* z, float* Ht, float* R, int n, int m);
+
 #ifdef __cplusplus
 }
 #endif
