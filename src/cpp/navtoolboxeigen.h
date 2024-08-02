@@ -60,14 +60,16 @@ int nav_kalman_eigen(
 {
     // Takasu formulation:
     Eigen::Matrix<Scalar, StateDim, MeasDim> D;
-    Eigen::Matrix<Scalar, MeasDim, MeasDim> L = R; // L is used as a temp matrix and preloaded with R
+    Eigen::Matrix<Scalar, MeasDim, MeasDim> L = R; // preloaded with covariance matrix R
 
     // (1) D = P * H'
+    // Non-template: D.noalias() = P.selfadjointView<Eigen::Upper>() * H.transpose();
     D.noalias() = P.template selfadjointView<Eigen::Upper>() * H.transpose();
+
     // (2) L = H * D + R
     L.noalias() += H * D;
     // (3) L = chol(L)
-    Eigen::LLT<Eigen::Matrix<Scalar, MeasDim, MeasDim>> lltOfL(L);
+    Eigen::LLT< Eigen::Matrix<Scalar, MeasDim, MeasDim> > lltOfL(L);
     if (lltOfL.info() != Eigen::Success)
     {
         return -1; // Cholesky decomposition failed
@@ -75,12 +77,16 @@ int nav_kalman_eigen(
     L = lltOfL.matrixL();
 
     // (4) E = D * (L')^-1
+    // Non-template: Eigen::Matrix<Scalar, StateDim, MeasDim> E = L.triangularView<Eigen::Lower>().solve(D.transpose()).transpose();
     Eigen::Matrix<Scalar, StateDim, MeasDim> E = L.template triangularView<Eigen::Lower>().solve(D.transpose()).transpose();
 
     // (5) P = P - E * E'
+    // Non-template: P.selfadjointView<Eigen::Upper>().rankUpdate(E, -1);
     P.template selfadjointView<Eigen::Upper>().rankUpdate(E, -1);
 
     // (6) K = E * L^-1
+    // Non-template: Eigen::Matrix<Scalar, StateDim, MeasDim> K =
+    //      L.transpose().triangularView<Eigen::Upper>().solve(E.transpose()).transpose();
     Eigen::Matrix<Scalar, StateDim, MeasDim> K =
         L.transpose().template triangularView<Eigen::Upper>().solve(E.transpose()).transpose();
 
