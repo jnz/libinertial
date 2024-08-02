@@ -62,7 +62,7 @@ function [] = decorr_testcase()
 
 x = [15; -2.5; 0];
 H = [1 -0.5 0.25; 0.1 5.0 -2];
-z = H*x; % add outlier
+z = H*x;
 
 B = [1.0 0.75; 0.2 5.0];
 R = B*diag([0.25^2 1.5^2])*B';
