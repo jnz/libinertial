@@ -195,9 +195,9 @@ static void testlinalg(void)
         float d[3] = { -1, -1, -1 };
         udu(A, U, d, 3);
 
-        matprint(A, 3, 3, "%6.4f", "A");
-        matprint(U, 3, 3, "%6.4f", "U");
-        matprint(d, 3, 1, "%6.4f", "d");
+        // matprint(A, 3, 3, "%6.4f", "A");
+        // matprint(U, 3, 3, "%6.4f", "U");
+        // matprint(d, 3, 1, "%6.4f", "d");
 
         const float Uexp[3*3] = {1, 0, 0, -0.4f, 1, 0, 0.8889f, 0.7778f, 1};
         const float dexp[3] = { 1.8f, 0.5556f, 9 };
@@ -318,15 +318,45 @@ static void testnavtoolbox(void)
         }
         printf("[x] Kalman Filter Update (nav_kalman_udu)\n");
     }
+    // decorr Test
+    {
+        float R[4] = { 1.328125f, 8.45f, 8.45f, 56.2525f };
+        float z[] = { 16.25f, -11.0f };
+        float Ht[] = { 1.0f, -0.5f, 0.25f, 0.1f, 5.0f, -2.0f };
+
+        const float zexp[] = { 14.100479758212652f, -72.481609669099413f };
+        const float Hexp[] = { 0.867721831274625f, -0.433860915637312f,
+            0.216930457818656f, -3.968112807452599f,  5.183967022924173f,
+            -2.275160677878139f };
+        const float threshold = 1.0e-04f;
+
+        int result = decorrelate(z, Ht, R, 3, 2);
+
+        assert(result == 0);
+        matprint(z, 2, 1, "%9.7f", "zdecorr");
+        matprint(Ht, 3, 2, "%9.7f", "Hdecorr'");
+
+        for (int i = 0; i < 2; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, z[i], zexp[i],
+                              "decorrelate z calculation failed");
+        }
+        for (int i = 0; i < 2*2; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, Ht[i], Hexp[i],
+                              "decorrelate H calculation failed");
+        }
+        printf("[x] Measurement decorrelation test (decorrelate)\n");
+    }
     // Robust UDU Kalman Filter Test
     {
         int result;
         const float P[] = { 144.010f, 120.0120f, 120.012f, 100.0144f };
-        const float Ht[] = { 1.0f, -0.5f, 0.1f, 5.0f };
+        float Ht[] = { 1.0f, -0.5f, 0.1f, 5.0f };
         float x[] = { 10.0f, -5.0f };
-        const float z[] = { 1.250000000000000e+01f, -1.240000000000000e+02f };
-        const float R[] = { 1.328125000000000e+00f, 8.449999999999999e+00f,
-                            8.449999999999999e+00f, 5.625250000000000e+01f };
+        float z[] = { 1.250000000000000e+01f, -1.240000000000000e+02f };
+        float R[] = { 1.328125000000000e+00f, 8.449999999999999e+00f,
+                      8.449999999999999e+00f, 5.625250000000000e+01f };
 
         float U[2 * 2];
         float d[2];
@@ -334,14 +364,15 @@ static void testnavtoolbox(void)
         assert(result == 0);
         const float chi2_threshold = 3.8415f;
 
+        decorrelate(z, Ht, R, 2, 2);
+        mateye(R, 2); // set R to eye(2)
         result = nav_kalman_udu(x, U, d, z, R, Ht, 2, 2, chi2_threshold, 1);
         assert(result == 0);
 
         const float x_robust_exp[] = { 9.918531929653216f, -5.068338573737113f };
         const float U_exp[]        = { 1.0f, 0, 1.198931661436124f, 1.0f };
         const float d_exp[]        = { 1.932847767499027e-03f, 2.641859030819114e+00f };
-        const float threshold      = 1.0e-06f;
-        /*
+        const float threshold      = 1.0e-04f;
         for (int i = 0; i < 2; i++)
         {
             TEST_FLOAT_WITHIN(threshold, x[i], x_robust_exp[i],
@@ -354,7 +385,7 @@ static void testnavtoolbox(void)
             TEST_FLOAT_WITHIN(threshold, U[i], U_exp[i],
                               "nav_kalman_udu robust U matrix calculation failed");
         }
-        */
+        printf("[x] Robust UDU Kalman Filter Test with Outlier\n");
     }
 
 }

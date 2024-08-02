@@ -2,6 +2,7 @@ function [] = testcasegen()
 
 kalman_udu_testcase();
 kalman_udu_robust_testcase();
+decorr_testcase();
 
 end
 
@@ -56,3 +57,23 @@ U_exp'
 d_exp
 
 end
+
+function [] = decorr_testcase()
+
+x = [15; -2.5; 0];
+H = [1 -0.5 0.25; 0.1 5.0 -2];
+z = H*x; % add outlier
+
+B = [1.0 0.75; 0.2 5.0];
+R = B*diag([0.25^2 1.5^2])*B';
+
+R
+z
+H
+
+[G] = chol(R); % G'*G = R
+zdecorr = (G')\z
+Hdecorr = (G')\H
+
+end
+
