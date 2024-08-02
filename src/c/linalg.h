@@ -70,6 +70,11 @@ void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, co
  */
 void matmulsym(const float* A_sym, const float* B, int n, int m, float* C);
 
+/** @brief Fill array with an identity matrix.
+ * @param[out] A To be filled (n x n).
+ * @param[in] n Dimension of A. */
+void mateye(float* A, int n);
+
 /** @brief Calculate the lower triangular matrix L, so
  * that L*L' = A. Operation count: n^3/6 with n square roots.
  * BLAS equivalent: ?potrf
@@ -87,6 +92,19 @@ void matmulsym(const float* A_sym, const float* B, int n, int m, float* C);
  * @return 0 if successful, -1 if matrix is not positive definite.
  */
 int cholesky(float* A, const int n, int onlyWriteLowerPart);
+
+/**
+ * @brief Triangular solve
+ * BLAS: ?trsm
+ *
+ * Solve matrix equation: A*X = B
+ * @param[in]     A Given lower triangular matrix (dimension n x n)
+ * @param[in,out] B Matrix being overwritten by X (dimension n x m)
+ * @param[in]     n Matrix dimension (rows / columns of A)
+ * @param[in]     m Matrix dimension (cols of B)
+ * @param[in]     tp Transpose L?
+ */
+void trisolve(const float* A, float* B, int n, int m, const char* tp);
 
 /**
  * @brief Triangular solve (right hand side).

@@ -60,6 +60,15 @@ void matmulsym(const float* A_sym, const float* B, int n, int m, float* C)
     assert(result == 0);
 }
 
+void mateye(float* A, int n)
+{
+    memset(A, 0, sizeof(float)*n*n);
+    for (int i=0;i<n;i++)
+    {
+        MAT_ELEM(A, i, i, n, n) = 1.0f;
+    }
+}
+
 int cholesky(float* A, const int n, int onlyWriteLowerPart)
 {
     /* in-place calculation of lower triangular matrix L*L' = A */
@@ -100,6 +109,16 @@ int cholesky(float* A, const int n, int onlyWriteLowerPart)
         }
     }
     return 0;
+}
+
+void trisolve(const float* A, float* B, int n, int m, const char* tp)
+{
+    float     alpha = 1.0f;
+    const int result =
+        strsm("L" /* left hand*/, "L" /* lower triangular matrix */, tp /* transpose L? */,
+              "N" /* L is not unit triangular */, &n, &m, &alpha, A, &n, B, &n);
+    assert(result == 0);
+    /* strsm basically just checks for proper matrix dimensions, handle via assert */
 }
 
 void trisolveright(const float* L, float* A, int n, int m, const char* tp)
