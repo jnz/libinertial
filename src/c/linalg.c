@@ -42,9 +42,9 @@
 void matmul(const char* ta, const char* tb, int n, int k, int m, float alpha, const float* A,
             const float* B, float beta, float* C)
 {
-    int lda    = lsame(ta, "T") ? m : n;
-    int ldb    = lsame(tb, "T") ? k : m;
-    int result = sgemm((char*)ta, (char*)tb, &n, &k, &m, &alpha, (float*)A, &lda, (float*)B, &ldb,
+    int lda    = lsame_(ta, "T") ? m : n;
+    int ldb    = lsame_(tb, "T") ? k : m;
+    int result = sgemm_((char*)ta, (char*)tb, &n, &k, &m, &alpha, (float*)A, &lda, (float*)B, &ldb,
                        &beta, C, &n);
     assert(result == 0);
 }
@@ -53,7 +53,7 @@ void matmulsym(const float* A_sym, const float* B, int n, int m, float* C)
 {
     float alpha  = 1.0f;
     float beta   = 0.0f;
-    int   result = ssymm("L" /* calculate C = A*B not C = B*A */,
+    int   result = ssymm_("L" /* calculate C = A*B not C = B*A */,
                          "U" /* reference upper triangular part of A */, &n, /* rows of B/C */
                          &m,                                                 /* cols of B / C */
                          &alpha, (float*)A_sym, &n, (float*)B, &n, &beta, C, &n);
@@ -115,7 +115,7 @@ void trisolve(const float* A, float* B, int n, int m, const char* tp)
 {
     float     alpha = 1.0f;
     const int result =
-        strsm("L" /* left hand*/, "L" /* lower triangular matrix */, tp /* transpose L? */,
+        strsm_("L" /* left hand*/, "L" /* lower triangular matrix */, tp /* transpose L? */,
               "N" /* L is not unit triangular */, &n, &m, &alpha, A, &n, B, &n);
     assert(result == 0);
     /* strsm basically just checks for proper matrix dimensions, handle via assert */
@@ -125,7 +125,7 @@ void trisolveright(const float* L, float* A, int n, int m, const char* tp)
 {
     float     alpha = 1.0f;
     const int result =
-        strsm("R" /* right hand*/, "L" /* lower triangular matrix */, tp /* transpose L? */,
+        strsm_("R" /* right hand*/, "L" /* lower triangular matrix */, tp /* transpose L? */,
               "N" /* L is not unit triangular */, &m, &n, &alpha, L, &n, A, &m);
     assert(result == 0);
     /* strsm basically just checks for proper matrix dimensions, handle via assert */
@@ -136,7 +136,7 @@ void symmetricrankupdate(float* P, const float* E, int n, int m)
     float alpha = -1.0f;
     float beta  = 1.0f;
 
-    const int result = ssyrk("U", "N", &n, &m, &alpha, (float*)E, &n, &beta, P, &n);
+    const int result = ssyrk_("U", "N", &n, &m, &alpha, (float*)E, &n, &beta, P, &n);
     assert(result == 0);
 }
 
