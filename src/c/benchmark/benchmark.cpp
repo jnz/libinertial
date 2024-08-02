@@ -59,7 +59,7 @@ static int kalman_test1(void)
 static int kalman_test_eigen(void)
 {
     const int StateDim = 4;
-    const int MeasDim = 3;
+    const int MeasDim  = 3;
 
     const float sigma = 0.05f;
     const float bias  = 0.66f;
@@ -75,10 +75,10 @@ static int kalman_test_eigen(void)
     float P_data[4 * 4] = { 0.94f, 0, 0, 0, 0, 0.94f, 0, 0, 0, 0, 0.94f, 0, 0, 0, 0, 9.84f };
     // </kalman filter>
     // Convert the arrays to Eigen variables with dynamic sizes
-    Matrix<float, MeasDim, MeasDim> R = Matrix<float, MeasDim, MeasDim>::Map(R_data);
-    Matrix<float, StateDim, 1> x = Matrix<float, StateDim, 1>::Map(x_data);
-    Matrix<float, StateDim, StateDim> P = Matrix<float, StateDim, StateDim>::Map(P_data);
-    Matrix<float, StateDim, MeasDim> Ht = Matrix<float, StateDim, MeasDim>::Map(Ht_data);
+    Matrix<float, MeasDim, MeasDim>   R  = Matrix<float, MeasDim, MeasDim>::Map(R_data);
+    Matrix<float, StateDim, 1>        x  = Matrix<float, StateDim, 1>::Map(x_data);
+    Matrix<float, StateDim, StateDim> P  = Matrix<float, StateDim, StateDim>::Map(P_data);
+    Matrix<float, StateDim, MeasDim>  Ht = Matrix<float, StateDim, MeasDim>::Map(Ht_data);
     Matrix<float, MeasDim, StateDim>  H  = Ht.transpose();
 
     Matrix<float, MeasDim, 1> z;
@@ -121,7 +121,7 @@ static int kalman_test_bierman(void)
 
     float x[4]     = { 0, 0, 0, 0 };
     float P[4 * 4] = { 0.94f, 0, 0, 0, 0, 0.94f, 0, 0, 0, 0, 0.94f, 0, 0, 0, 0, 9.84f };
-    float U[4 * 4] = {0};
+    float U[4 * 4] = { 0 };
     float d[4];
     udu(P, U, d, 4);
 

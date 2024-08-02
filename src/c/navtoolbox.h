@@ -65,7 +65,8 @@ extern "C"
      *
      * @param[in,out] x System state (n x 1)
      * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty (n x n)
-     * @param[in] dz Measurement residual vector: measurement vs. expected measurement: z - H*x (m x 1)
+     * @param[in] dz Measurement residual vector: measurement vs. expected measurement: z - H*x (m x
+     * 1)
      * @param[in] R Full covariance matrix of measurement uncertainty (m x m)
      * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
      * @param[in] n Number of state variables
@@ -75,20 +76,23 @@ extern "C"
      *
      * @return 0 on success, -1 on error.
      */
-    int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht,
-                   int n, int m);
+    int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n,
+                   int m);
 
     /** @brief (Robust) Square Root Kalman Filter routine for linear system.
      *
      * @param[in,out] x System state (n x 1)
-     * @param[in,out] U Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
-     * @param[in,out] d Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x 1)
+     * @param[in,out] U Unit upper triangular factor of covariance matrix of a priori state
+     * uncertainty (n x n)
+     * @param[in,out] d Unit upper triangular factor of covariance matrix of a priori state
+     * uncertainty (n x 1)
      * @param[in] z Measurement vector: z = H*x (m x 1)
      * @param[in] R Full covariance matrix of measurement uncertainty (m x m)
      * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
      * @param[in] n Number of state variables
      * @param[in] m Number of measurements
-     * @param[in] chi2_threshold Scalar threshold for outlier classification. Set to 0.0f to disable.
+     * @param[in] chi2_threshold Scalar threshold for outlier classification. Set to 0.0f to
+     * disable.
      * @param[in] downweight_outlier If set to 0, measurements classified as outliers are skipped.
      *
      * @return 0 on success, -1 on error.
@@ -99,8 +103,10 @@ extern "C"
     /** @brief Square Root Kalman Filter Routine for scalar measurement.
      *
      * @param[in,out] x System state (n x 1)
-     * @param[in,out] U Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x n)
-     * @param[in,out] d Unit upper triangular factor of covariance matrix of a priori state uncertainty (n x 1)
+     * @param[in,out] U Unit upper triangular factor of covariance matrix of a priori state
+     * uncertainty (n x n)
+     * @param[in,out] d Unit upper triangular factor of covariance matrix of a priori state
+     * uncertainty (n x 1)
      * @param[in] dz Scalar measurement residual: dz = z - H*x (1 x 1)
      * @param[in] R Scalar covariance of measurement uncertainty (1 x 1)
      * @param[in] H_line Row of measurement sensitivity matrix (n x 1)
@@ -116,7 +122,8 @@ extern "C"
      * Note: If R only has diagonal elements, a call to this function does not help.
      *
      * @param[in,out] z Vector of correlated measurements (m x 1).
-     * @param[in,out] Ht Transposed measurement sensitivity matrix / design matrix so that z = Ht'*x (n x m).
+     * @param[in,out] Ht Transposed measurement sensitivity matrix / design matrix so that z = Ht'*x
+     * (n x m).
      * @param[in,out] R Measurement covariance matrix, replaced in-place by chol(R) (m x m).
      *                  So the input is R, overwritten with L such that L*L'=R.
      * @param[in] n Number of columns in H (for a Kalman filter: length of state vector x).

@@ -62,8 +62,8 @@ void matmulsym(const float* A_sym, const float* B, int n, int m, float* C)
 
 void mateye(float* A, int n)
 {
-    memset(A, 0, sizeof(float)*n*n);
-    for (int i=0;i<n;i++)
+    memset(A, 0, sizeof(float) * n * n);
+    for (int i = 0; i < n; i++)
     {
         MAT_ELEM(A, i, i, n, n) = 1.0f;
     }
@@ -142,51 +142,51 @@ void symmetricrankupdate(float* P, const float* E, int n, int m)
 
 int udu(const float* A, float* U, float* d, const int m)
 {
-/*    A = U*diag(d)*U' decomposition
- *    Source:
- *      1. Golub, Gene H., and Charles F. Van Loan. "Matrix Computations." 4rd ed.,
- *         Johns Hopkins University Press, 2013.
- *      2. Grewal, Weill, Andrews. "Global positioning systems, inertial
- *         navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
- *
- *    function [U, d] = udu(M)
- *      [m, ~] = size(M);
- *      U = zeros(m, m); d = zeros(m, 1);
- *
- *      for j = m:-1:1
- *        for i = j:-1:1
- *          sigma = M(i, j);
- *          for k = j + 1:m
- *              sigma = sigma - U(i, k) * d(k) * U(j, k);
- *          end
- *          if i == j
- *              d(j) = sigma;
- *              U(j, j) = 1; % U is a unit triangular matrix
- *          else
- *              U(i, j) = sigma / d(j); % off-diagonal elements of U
- *          end
- *        end
- *      end
- *    end
- */
-    int i, j, k;
+    /*    A = U*diag(d)*U' decomposition
+     *    Source:
+     *      1. Golub, Gene H., and Charles F. Van Loan. "Matrix Computations." 4rd ed.,
+     *         Johns Hopkins University Press, 2013.
+     *      2. Grewal, Weill, Andrews. "Global positioning systems, inertial
+     *         navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
+     *
+     *    function [U, d] = udu(M)
+     *      [m, ~] = size(M);
+     *      U = zeros(m, m); d = zeros(m, 1);
+     *
+     *      for j = m:-1:1
+     *        for i = j:-1:1
+     *          sigma = M(i, j);
+     *          for k = j + 1:m
+     *              sigma = sigma - U(i, k) * d(k) * U(j, k);
+     *          end
+     *          if i == j
+     *              d(j) = sigma;
+     *              U(j, j) = 1; % U is a unit triangular matrix
+     *          else
+     *              U(i, j) = sigma / d(j); % off-diagonal elements of U
+     *          end
+     *        end
+     *      end
+     *    end
+     */
+    int   i, j, k;
     float sigma;
 
-    memset(U, 0, sizeof(U[0])*m*m);
-    memset(d, 0, sizeof(d[0])*m);
+    memset(U, 0, sizeof(U[0]) * m * m);
+    memset(d, 0, sizeof(d[0]) * m);
 
-    for (j = m-1; j>=0; j--) /* UDU decomposition */
+    for (j = m - 1; j >= 0; j--) /* UDU decomposition */
     {
-        for (i = j; i>=0; i--)
+        for (i = j; i >= 0; i--)
         {
             sigma = MAT_ELEM(A, i, j, m, m);
-            for (k = j+1; k < m; k++)
+            for (k = j + 1; k < m; k++)
             {
                 sigma -= MAT_ELEM(U, i, k, m, m) * d[k] * MAT_ELEM(U, j, k, m, m);
             }
             if (i == j)
             {
-                d[j] = sigma;
+                d[j]                    = sigma;
                 MAT_ELEM(U, j, j, m, m) = 1.0f;
             }
             else
@@ -202,4 +202,3 @@ int udu(const float* A, float* U, float* d, const int m)
     }
     return 0;
 }
-

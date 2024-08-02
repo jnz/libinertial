@@ -126,53 +126,53 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     return 0;
 }
 
-int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const
-                          float R, const float* H_line, int n)
+int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const float R,
+                          const float* H_line, int n)
 {
     float a[NAV_KALMAN_MAX_STATE_SIZE];
     float b[NAV_KALMAN_MAX_STATE_SIZE];
     float alpha = R;
-    float gamma = 1.0f/alpha;
+    float gamma = 1.0f / alpha;
 
     matmul("T", "N", n, 1, n, 1.0f, U, H_line, 0.0f, a); // a = U'*H'
-    for (int j=0;j<n;j++)
+    for (int j = 0; j < n; j++)
     {
-        b[j] = d[j]*a[j]; // b = D*a = diag(d)*a
+        b[j] = d[j] * a[j]; // b = D*a = diag(d)*a
     }
 
-    for (int j=0;j<n;j++)
+    for (int j = 0; j < n; j++)
     {
-        float beta=alpha;
-        alpha += a[j]*b[j];
-        float lambda = -a[j]*gamma;
-        gamma = 1.0f/alpha; // FIXME test if this is possible and return -1 if not
-        d[j] *= beta*gamma;
-        for (int i=0;i<j;i++)
+        float beta = alpha;
+        alpha += a[j] * b[j];
+        float lambda = -a[j] * gamma;
+        gamma        = 1.0f / alpha; // FIXME test if this is possible and return -1 if not
+        d[j] *= beta * gamma;
+        for (int i = 0; i < j; i++)
         {
-            beta = MAT_ELEM(U, i, j, n, n);
-            MAT_ELEM(U, i, j, n, n) = beta + b[i]*lambda;
-            b[i] += b[j]*beta;
+            beta                    = MAT_ELEM(U, i, j, n, n);
+            MAT_ELEM(U, i, j, n, n) = beta + b[i] * lambda;
+            b[i] += b[j] * beta;
         }
     }
 
-    for (int j=0;j<n;j++)
+    for (int j = 0; j < n; j++)
     {
-        x[j] += gamma*dz*b[j];
+        x[j] += gamma * dz * b[j];
     }
 
     return 0;
 }
 
-int nav_kalman_udu(float* x, float* U, float* d, const float* z, const float* R,
-                   const float* Ht, int n, int m, float chi2_threshold, int downweight_outlier)
+int nav_kalman_udu(float* x, float* U, float* d, const float* z, const float* R, const float* Ht,
+                   int n, int m, float chi2_threshold, int downweight_outlier)
 {
     int retcode = 0;
 
-    for (int i=0;i<m;i++,Ht+=n) /* iterate over each measurement,
-                                   goto next line of H after each iteration */
+    for (int i = 0; i < m; i++, Ht += n) /* iterate over each measurement,
+                                            goto next line of H after each iteration */
     {
         float Rv = MAT_ELEM(R, i, i, m, m); /// get scalar measurement variance
-        float dz = z[i]; // calculate residual for current scalar measurement
+        float dz = z[i];                    // calculate residual for current scalar measurement
         matmul("N", "N", 1, 1, n, -1.0f, Ht, x, 1.0f, &dz); // dz = z - H(i,:)*x
 
         // <robust>
@@ -190,7 +190,7 @@ int nav_kalman_udu(float* x, float* U, float* d, const float* z, const float* R,
             {
                 HPHT += tmp[j] * tmp[j] * d[j];
             }
-            s = HPHT + Rv;
+            s                               = HPHT + Rv;
             const float mahalanobis_dist_sq = dz * dz / s;
             if (mahalanobis_dist_sq > chi2_threshold) // potential outlier?
             {
@@ -223,13 +223,16 @@ int decorrelate(float* z, float* Ht, float* R, int n, int m)
     Rdecorr = eye(length(z)); */
 
     // in-place cholesky so that L*L' = R:
-    int result = cholesky(R, m, 0/* 0 means: fill upper part with zeros */);
-    if (result != 0) { return -1; }
+    int result = cholesky(R, m, 0 /* 0 means: fill upper part with zeros */);
+    if (result != 0)
+    {
+        return -1;
+    }
     // L*H_decorr = H
     // (L*H_decorr)' = H'
     // H_decorr'*L' = H' solve for H_decorr
-    trisolveright(R/*L*/, Ht, m, n, "T");
-    trisolve(R/*L*/, z, m, 1, "N");
+    trisolveright(R /*L*/, Ht, m, n, "T");
+    trisolve(R /*L*/, z, m, 1, "N");
 
     return 0;
 }

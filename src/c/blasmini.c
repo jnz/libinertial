@@ -47,8 +47,8 @@ int lsame(const char* a, const char* b)
     return (tolower(*a) == tolower(*b));
 }
 
-int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m,
-          int* n, float* alpha, const float* a, int* lda, float* b, int* ldb)
+int strsm(const char* side, const char* uplo, const char* transa, const char* diag, int* m, int* n,
+          float* alpha, const float* a, int* lda, float* b, int* ldb)
 {
     /* Local variables */
     int   i__, j, k, info;
@@ -516,8 +516,8 @@ int strsm(const char* side, const char* uplo, const char* transa, const char* di
     return 0;
 }
 
-int sgemm(char* transa, char* transb, int* m, int* n, int* k, float* alpha, float* a,
-          int* lda, float* b, int* ldb, float* beta, float* c__, int* ldc)
+int sgemm(char* transa, char* transb, int* m, int* n, int* k, float* alpha, float* a, int* lda,
+          float* b, int* ldb, float* beta, float* c__, int* ldc)
 {
     int a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2, i__3;
     /* Local variables */
@@ -896,8 +896,8 @@ int sgemm(char* transa, char* transb, int* m, int* n, int* k, float* alpha, floa
     return 0;
 }
 
-int ssyrk(char* uplo, char* trans, int* n, int* k, float* alpha, float* a, int* lda,
-                 float* beta, float* c__, int* ldc)
+int ssyrk(char* uplo, char* trans, int* n, int* k, float* alpha, float* a, int* lda, float* beta,
+          float* c__, int* ldc)
 {
     int a_dim1, a_offset, c_dim1, c_offset, i__1, i__2, i__3;
 
@@ -1273,7 +1273,7 @@ int ssyrk(char* uplo, char* trans, int* n, int* k, float* alpha, float* a, int* 
 }
 
 int ssymm(char* side, char* uplo, int* m, int* n, float* alpha, float* a, int* lda, float* b,
-                 int* ldb, float* beta, float* c__, int* ldc)
+          int* ldb, float* beta, float* c__, int* ldc)
 {
     int a_dim1, a_offset, b_dim1, b_offset, c_dim1, c_offset, i__1, i__2, i__3;
     /* Local variables */
@@ -1839,4 +1839,3 @@ L40:
 
 } /* spotf2_ */
 #endif
-
