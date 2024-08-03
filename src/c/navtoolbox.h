@@ -71,13 +71,29 @@ extern "C"
      * @param[in] Ht Transposed (!) measurement sensitivity matrix (n x m) (H would be m x n)
      * @param[in] n Number of state variables
      * @param[in] m Number of measurements
+     * @param[in] chi2_threshold Scalar threshold for chi2 outlier removal threshold. Set to 0.0f to
+     * disable.
+     * @param[out] chi2 Result for dz.
+     * 
+     * Note 1: only the upper triangular part of P is referenced and updated.
+     * Note 2:
+     *    chi2 threshold for 95% confidence is given in table below. E.g. if
+     *    dz contains 3 measurements, use 7.8147 (MATLAB chi2inv(0.95, 3).
+     * 
+     *    chi2inv(0.95, 1:20):
+     *    chi95%  = [  3.8415  5.9915  7.8147  9.4877 11.0705 12.5916 14.0671 ...
+     *                15.5073 16.9190 18.3070 19.6751 21.0261 22.3620 23.6848 ...
+     *                24.9958 26.2962 27.5871 28.8693 30.1435 31.4104 ];
      *
-     * Note (!): only the upper triangular part of P is referenced and updated.
+     *    chi2inv(0.99, 1:20):
+     *    chi99% = [ 6.6349,  9.2103, 11.3449, 13.2767, 15.0863, 16.8119, ...
+     *              18.4753, 20.0902, 21.6660, 23.2093, 24.7250, 26.2170, 27.6882, ...
+     *              29.1412, 30.5779, 31.9999, 33.4087, 34.8053, 36.1909, 37.5662 ];
      *
-     * @return 0 on success, -1 on error.
+     * @return 0 on success, -1 on error, -2 if measurement is rejected as outlier.
      */
     int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n,
-                   int m);
+                   int m, float chi2_threshold, float* chi2);
 
     /** @brief (Robust) Square Root Kalman Filter routine for linear system.
      *

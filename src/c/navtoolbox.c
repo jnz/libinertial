@@ -79,7 +79,8 @@ void nav_matrix_body2nav(const float roll_rad, const float pitch_rad, const floa
     R_output[8]      = cosr * cosp;
 }
 
-int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n, int m)
+int nav_kalman(float* x, float* P, const float* dz, const float* R, const float* Ht, int n,
+               int m, float chi2_threshold, float* chi2)
 {
     float D[NAV_KALMAN_MAX_STATE_SIZE * NAV_KALMAN_MAX_MEASUREMENTS];
     float L[NAV_KALMAN_MAX_MEASUREMENTS * NAV_KALMAN_MAX_MEASUREMENTS];
@@ -110,8 +111,43 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
                                                                      // (inplace calculation of L)
     if (result != 0)
     {
-        return -1;
-    }                               // Cholesky fails: bail out (*)
+        return -1; // Cholesky fails: bail out (*)
+    }
+
+    /* if chi2 stats are requested and/or outlier detection is activated: */
+    if (chi2 || (chi2_threshold > 0.0f))
+    {
+        /*  Outlier test from:
+            M. S. Grewal, L. R. Weill and A. P. Andrews
+            Global Positioning Systems, Inertial Navigation and Integration
+            John Wiley & Sons, 2000.
+
+            chi2 = dz' * S^(-1) * dz
+            dz' * (L*L')^(-1) * dz
+            dz' * L^(-T) * L^(-1) * dz
+            y = L^(-1) * dz
+            L*y = dz, solve for y
+            chi2 = y'*y
+        */
+        float y[NAV_KALMAN_MAX_MEASUREMENTS];
+        memcpy(y, dz, sizeof(dz[0]) * m);
+        trisolve(L, y, m, 1, "N");
+        float chi2sum = 0.0f;
+        for (int i = 0; i < m; i++)
+        {
+            chi2sum += y[i] * y[i];
+        }
+        chi2sum /= (float)m;
+        if (chi2)
+        {
+            *chi2 = chi2sum; /* chi2 stats requested by caller */
+        }
+        if ((chi2_threshold > 0) && (chi2sum > chi2_threshold))
+        {
+            return -2; /* reject measurement */
+        }
+    }
+
     trisolveright(L, D, m, n, "T"); // (4) given L' and D, solve E*L' = D, for E, overwrite D with E
     symmetricrankupdate(P, D /*E*/, n, m); // (5) P = P - E*E'
     trisolveright(L, D /*E*/, m, n, "N");  // (6) solve K*L = E, for K, overwrite D with K
@@ -119,7 +155,7 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
 
     /* FIXME check for P positive definite (symmetric is automatic)*/
     /* FIXME check for isfinite() in state vector */
-    /* FIXME check for chi2 */
+
 
     /* (*) If a Cholesky decomposition is found the trsm operations will succeed. */
 

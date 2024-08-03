@@ -42,7 +42,7 @@ static int kalman_test1(void)
         dz[1] = z[1] - (x[1] + x[3]);
         dz[2] = z[2] - (x[2] + x[3]);
 
-        nav_kalman(x, P, dz, R, Ht, 4, 3);
+        nav_kalman(x, P, dz, R, Ht, 4, 3, 0.0f, NULL);
 
         xr[0] = x[0];
         xr[1] = x[1];

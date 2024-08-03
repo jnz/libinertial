@@ -3,6 +3,7 @@ function [] = testcasegen()
 kalman_udu_testcase();
 kalman_udu_robust_testcase();
 decorr_testcase();
+kalman_takasu_robust();
 
 end
 
@@ -74,6 +75,18 @@ H
 [G] = chol(R); % G'*G = R
 zdecorr = (G')\z
 Hdecorr = (G')\H
+
+end
+
+function [] = kalman_takasu_robust()
+
+R = eye(3) * 0.25;
+dz = [0.2688, 0.9169, -100.1294 ]';
+H = [8 1 6 1 ; 3 5 7 2; 4 9 2 3 ];
+x = ones(4,1);
+P = eye(4) * 0.04;
+[x, P, chi2_takasu] = kalman_takasu(x, P, dz, R, H);
+chi2_takasu
 
 end
 

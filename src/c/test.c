@@ -254,7 +254,7 @@ static void testnavtoolbox(void)
         const float Ht[4 * 3] = { 8, 1, 6, 1, 3, 5, 7, 2, 4, 9, 2, 3 };
         float       x[4]      = { 1, 1, 1, 1 };
         float       P[4 * 4]  = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
-        int         result    = nav_kalman(x, P, dz, R, Ht, 4, 3);
+        int         result    = nav_kalman(x, P, dz, R, Ht, 4, 3, 0.0f, NULL);
         assert(result == 0);
         const float xexp[4]     = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
         const float threshold   = 1.0e-04f;
@@ -275,6 +275,33 @@ static void testnavtoolbox(void)
                               "nav_kalman covariance matrix calculation failed");
         }
         printf("[x] Kalman Filter Update (nav_kalman)\n");
+    }
+    // Test same kalman filter but now with an outlier
+    {
+        const float R[3 * 3]  = { 0.25f, 0, 0, 0, 0.25f, 0, 0, 0, 0.25f };
+        const float dz[3]     = { 0.2688f, 0.9169f, -100.1294f }; // adding outlier to 3rd measurement
+        const float Ht[4 * 3] = { 8, 1, 6, 1, 3, 5, 7, 2, 4, 9, 2, 3 };
+        float       x[4]      = { 1, 1, 1, 1 };
+        float       P[4 * 4]  = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
+        float       chi2;
+        int         result    = nav_kalman(x, P, dz, R, Ht, 4, 3, 7.8147f, &chi2);
+        assert(result == -2);
+        const float xexp[4]     = { 1, 1, 1, 1 };
+        float       Pexp[4 * 4] = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
+        const float threshold   = 1.0e-04f;
+        const float chi2exp     = 1622.8f; // from testcasegen.m kalman_takasu_robust()
+        TEST_FLOAT_WITHIN(0.1f, chi2, chi2exp, "outlier test chi2 result incorrect");
+        for (int i = 0; i < 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, x[i], xexp[i],
+                              "nav_kalman failed to reject outlier");
+        }
+        for (int i = 0; i < 4 * 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, P[i], Pexp[i],
+                              "nav_kalman outlier modified covariance matrix");
+        }
+        printf("[x] Kalman Filter Outlier Test (nav_kalman)\n");
     }
     {
         const float R[3 * 3]  = { 0.25f, 0, 0, 0, 0.25f, 0, 0, 0, 0.25f };
@@ -341,8 +368,8 @@ static void testnavtoolbox(void)
         int result = decorrelate(z, Ht, R, 3, 2);
 
         assert(result == 0);
-        matprint(z, 2, 1, "%9.7f", "zdecorr");
-        matprint(Ht, 3, 2, "%9.7f", "Hdecorr'");
+        // matprint(z, 2, 1, "%9.7f", "zdecorr");
+        // matprint(Ht, 3, 2, "%9.7f", "Hdecorr'");
 
         for (int i = 0; i < 2; i++)
         {
