@@ -8,6 +8,7 @@
 #include "../../cpp/navtoolboxeigen.h"
 using namespace Eigen;
 
+/* Test the C-version of the Takasu Kalman filter on a simple problem */
 static int kalman_test1(void)
 {
     const float sigma = 0.05f;
@@ -56,7 +57,8 @@ static int kalman_test1(void)
 
 // ----------------------------------------------------------------------------------
 
-static int kalman_test_eigen(void)
+/* Test the C++ (Eigen) version of the Takasu Kalman filter on a simple problem */
+static int kalman_test1_eigen(void)
 {
     const int StateDim = 4;
     const int MeasDim  = 3;
@@ -107,7 +109,8 @@ static int kalman_test_eigen(void)
 }
 // ----------------------------------------------------------------------------------
 
-static int kalman_test_bierman(void)
+/* Test the Bierman UDU filter */
+static int kalman_test1_udu(void)
 {
     const float sigma = 0.05f;
     const float bias  = 0.66f;
@@ -152,7 +155,7 @@ static int kalman_test_bierman(void)
 
 // ----------------------------------------------------------------------------------
 
-void benchmark(void)
+void benchmark1(void)
 {
     {
         auto start = std::chrono::high_resolution_clock::now();
@@ -168,7 +171,7 @@ void benchmark(void)
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        int loops = kalman_test_eigen();
+        int loops = kalman_test1_eigen();
 
         auto                          end      = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = end - start;
@@ -179,11 +182,16 @@ void benchmark(void)
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        int loops = kalman_test_bierman();
+        int loops = kalman_test1_udu();
 
         auto                          end      = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = end - start;
-        std::cout << "Duration Bierman Test: " << duration.count() << " s. "
+        std::cout << "Duration UDU Test: " << duration.count() << " s. "
                   << "sec/loop: " << (duration.count() / loops) << std::endl;
     }
+}
+
+void benchmark(void)
+{
+    benchmark1();
 }
