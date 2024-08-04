@@ -4,6 +4,10 @@ SOURCES = navtoolbox.c test.c linalg.c benchmark/benchmark.cpp
 HEADERS = navtoolbox.h linalg.h benchmark/benchmark.h
 OUTPUT = navtest
 LDFLAGS = -lm -lstdc++ -L /opt/blasfeo/lib -lblasfeo
+#
+# Build option for blasfeo
+# make LA=REFERENCE TARGET=X64_INTEL_HASWELL static_library MF=COLMAJ FORTRAN_BLAS_API=1
+# sudo make install_static
 
 all: $(OUTPUT)
 
