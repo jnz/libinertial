@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = -O2 -Wall -Wdouble-promotion -fno-math-errno -I/usr/include/eigen3
-SOURCES = navtoolbox.c test.c linalg.c blasmini.c benchmark/benchmark.cpp
-HEADERS = navtoolbox.h linalg.h blasmini.h benchmark/benchmark.h
+CFLAGS = -O2 -Wall -Wdouble-promotion -fno-math-errno -I/usr/include/eigen3 -I /opt/blasfeo/include/
+SOURCES = navtoolbox.c test.c linalg.c benchmark/benchmark.cpp
+HEADERS = navtoolbox.h linalg.h benchmark/benchmark.h
 OUTPUT = navtest
-LDFLAGS = -lm -lstdc++
+LDFLAGS = -lm -lstdc++ -L /opt/blasfeo/lib -lblasfeo
 
 all: $(OUTPUT)
 
