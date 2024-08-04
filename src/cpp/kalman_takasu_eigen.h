@@ -14,8 +14,6 @@
  * PROJECT INCLUDE FILES
  ******************************************************************************/
 
-#include "../c/navtoolbox.h"
-
 /******************************************************************************
  * DEFINES
  ******************************************************************************/
@@ -36,22 +34,28 @@
  * FUNCTION PROTOTYPES
  ******************************************************************************/
 
-/** @brief Kalman Filter Routine.
+/** @brief Kalman Filter Update Routine as Template Function, based on the
+ * Takasu method. This template function can result in significantly
+ * faster code, compared to the general implementation "kalman_takasu_dynamic".
+ *
+ * Call in the following way:
+ *  kalman_takasu_eigen<float, StateDim, MeasDim>(x, P, dz, R, H);
+ *
+ * n = StateDim (dimension of x), m = MeasDim (dimension of dz)
  *
  * @param[in,out] x System state (dimension n)
- * @param[in,out] P Upper triangular Covariance matrix of state estimation uncertainty
- * @param[in] dz Difference between measurement and expected measurement: z - H*x (dimension m)
+ * @param[in,out] P Upper triangular Covariance matrix of state estimation
+ *                  uncertainty.
+ * @param[in] dz Difference between measurement and expected measurement:
+ *               z - H*x (dimension m)
  * @param[in] R Covariance matrix of measurement uncertainty (dimension m x m)
  * @param[in] H Measurement sensitivity matrix (m x n)
- *
- * n = StateDim, m = MeasDim
  *
  * Note (!): only the upper triangular part of P is referenced and updated.
  * @return 0 on success, -1 on error.
  */
-
 template <typename Scalar, int StateDim, int MeasDim>
-int nav_kalman_eigen(
+int kalman_takasu(
     Eigen::Matrix<Scalar, StateDim, 1>& x,
     Eigen::Matrix<Scalar, StateDim, StateDim>& P,
     const Eigen::Matrix<Scalar, MeasDim, 1>& dz,
@@ -94,5 +98,29 @@ int nav_kalman_eigen(
 
     return 0;
 }
+
+/** @brief Kalman Filter Update Routine for arbitrary matrix dimensions, based on the
+ * Takasu method. This is function is typically slower than the template function
+ * above, but more flexible, which could be useful in some scenarios.
+ * The algorithm is basically the same compared to kalman_takasu_eigen.
+ *
+ * n = StateDim (dimension of x), m = MeasDim (dimension of dz)
+ *
+ * @param[in,out] x System state (dimension n)
+ * @param[in,out] P Upper triangular Covariance matrix of state estimation
+ *                  uncertainty.
+ * @param[in] dz Difference between measurement and expected measurement:
+ *               z - H*x (dimension m)
+ * @param[in] R Covariance matrix of measurement uncertainty (dimension m x m)
+ * @param[in] H Measurement sensitivity matrix (m x n)
+ *
+ * Note (!): only the upper triangular part of P is referenced and updated.
+ * @return 0 on success, -1 on error.
+ */
+int kalman_takasu_dynamic(Eigen::Matrix<float, Eigen::Dynamic, 1>& x,
+                          Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& P,
+                          const Eigen::Matrix<float, Eigen::Dynamic, 1>& dz,
+                          const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& R,
+                          const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& H);
 
 /* @} */

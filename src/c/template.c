@@ -1,5 +1,5 @@
 /** @file template.c
- * libinertial, Jan Zwiener (jan@zwiener.org)
+ * @author Jan Zwiener (jan@zwiener.org)
  *
  * @brief Example .c file structure
  * @{ */

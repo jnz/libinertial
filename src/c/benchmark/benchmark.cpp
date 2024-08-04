@@ -5,7 +5,7 @@
 #include "benchmark.h"
 #include "../navtoolbox.h"
 #include "../linalg.h"
-#include "../../cpp/navtoolboxeigen.h"
+#include "../../cpp/kalman_takasu_eigen.h"
 using namespace Eigen;
 
 /* Test the C-version of the Takasu Kalman filter on a simple problem */
@@ -96,7 +96,7 @@ static int kalman_test1_eigen(void)
         z(2) = distribution(generator) + bias;
 
         dz = z - H * x;
-        nav_kalman_eigen<float, StateDim, MeasDim>(x, P, dz, R, H);
+        kalman_takasu<float, StateDim, MeasDim>(x, P, dz, R, H);
 
         xr[0] = x(0);
         xr[1] = x(1);
