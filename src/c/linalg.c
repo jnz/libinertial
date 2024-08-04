@@ -149,6 +149,16 @@ void symmetricrankupdate(float* P, const float* E, int n, int m)
     float beta  = 1.0f;
 
     const int result = ssyrk_("U", "N", &n, &m, &alpha, (float*)E, &n, &beta, P, &n);
+
+    /* sync lower part */
+    for (int i = 0; i < n - 1; i++) /* row */
+    {
+        for (int j = i + 1; j < n; j++) /* col */
+        {
+            MAT_ELEM(P, j, i, n, n) = MAT_ELEM(P, i, j, n, n);
+        }
+    }
+
     assert(result == 0);
 }
 

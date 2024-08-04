@@ -259,10 +259,17 @@ static void testnavtoolbox(void)
         assert(result == 0);
         const float xexp[4]     = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
         const float threshold   = 1.0e-04f;
+        /*
         const float Pexp[4 * 4] = {
             0.0081f,  0.0000f,  0.0000f, 0.0000f, -0.0006f, 0.0063f,  0.0000f,  0.0000f,
             -0.0056f, -0.0006f, 0.0081f, 0.0000f, -0.0021f, -0.0102f, -0.0021f, 0.0367f
-        }; /* upper triangular part is valid */
+        }; // upper triangular part is valid
+        */
+        const float Pexp[4 * 4] = {
+             0.0081f, -0.0006f, -0.0056f, -0.0021f,
+            -0.0006f,  0.0063f, -0.0006f, -0.0102f,
+            -0.0056f, -0.0006f,  0.0081f, -0.0021f,
+            -0.0021f, -0.0102f, -0.0021f,  0.0367f };
         // matprint(x, 4, 1, "%6.3f", "x");
         // matprint(P, 4, 4, "%6.3f", "P");
         for (int i = 0; i < 4; i++)
@@ -511,9 +518,10 @@ static void testnavtoolbox(void)
         const float xexp[4]     = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
         const float threshold   = 1.0e-04f;
         const float Pexp[4 * 4] = {
-            0.0081f,  0.0000f,  0.0000f, 0.0000f, -0.0006f, 0.0063f,  0.0000f,  0.0000f,
-            -0.0056f, -0.0006f, 0.0081f, 0.0000f, -0.0021f, -0.0102f, -0.0021f, 0.0367f
-        }; /* upper triangular part is valid */
+             0.0081f, -0.0006f, -0.0056f, -0.0021f,
+            -0.0006f,  0.0063f, -0.0006f, -0.0102f,
+            -0.0056f, -0.0006f,  0.0081f, -0.0021f,
+            -0.0021f, -0.0102f, -0.0021f,  0.0367f };
         // matprint(x, 4, 1, "%6.3f", "x");
         // matprint(P, 4, 4, "%6.3f", "P");
         for (int i = 0; i < 4; i++)
