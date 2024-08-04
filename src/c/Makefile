@@ -1,9 +1,9 @@
 CC = gcc
 CFLAGS = -O2 -Wall -Wdouble-promotion -fno-math-errno -I/usr/include/eigen3 -I /opt/blasfeo/include/
-SOURCES = navtoolbox.c test.c linalg.c benchmark/benchmark.cpp
+SOURCES = navtoolbox.c test.c linalg.c benchmark/benchmark.cpp kalman_takasu_blasfeo.c
 HEADERS = navtoolbox.h linalg.h benchmark/benchmark.h
 OUTPUT = navtest
-LDFLAGS = -lm -lstdc++ -L /opt/blasfeo/lib -lblasfeo
+LDFLAGS = -lm -lstdc++ -L/opt/blasfeo/lib -lblasfeo
 #
 # Build option for blasfeo
 # make LA=REFERENCE TARGET=X64_INTEL_HASWELL static_library MF=COLMAJ FORTRAN_BLAS_API=1

@@ -19,6 +19,7 @@
 #include "linalg.h"
 #include "navtoolbox.h"
 #include "benchmark/benchmark.h"
+#include "kalman_takasu_blasfeo.h"
 
 /******************************************************************************
  * DEFINES
@@ -419,6 +420,114 @@ static void testnavtoolbox(void)
                               "nav_kalman_udu robust U matrix calculation failed");
         }
         printf("[x] Robust UDU Kalman Filter Test with Outlier\n");
+    }
+    // Kalman Takasu BLASFEO Test
+    {
+        const float R[3 * 3]  = { 0.25f, 0, 0, 0, 0.25f, 0, 0, 0, 0.25f };
+        const float dz[3]     = { 0.2688f, 0.9169f, -1.1294f };
+        const float Ht[4 * 3] = { 8, 1, 6, 1, 3, 5, 7, 2, 4, 9, 2, 3 };
+        float       x[4]      = { 1, 1, 1, 1 };
+        float       P[4 * 4]  = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
+
+        const int n = 4;
+        const int m = 3;
+
+        struct blasfeo_smat sR;
+        int R_size = blasfeo_memsize_smat(m, m);
+        void *R_mem_align;
+        v_zeros_align(&R_mem_align, R_size);
+        blasfeo_create_smat(m, m, &sR, R_mem_align);
+        blasfeo_pack_smat(m, m, (float*)R, m, &sR, 0, 0);  // convert from column-major to BLASFEO smat
+
+        struct blasfeo_smat sdz;
+        int dz_size = blasfeo_memsize_smat(m, 1);
+        void *dz_mem_align;
+        v_zeros_align(&dz_mem_align, dz_size);
+        blasfeo_create_smat(m, 1, &sdz, dz_mem_align);
+        blasfeo_pack_smat(m, 1, (float*)dz, m, &sdz, 0, 0);  // convert from column-major to BLASFEO smat
+
+        struct blasfeo_smat sHt;
+        int ht_size = blasfeo_memsize_smat(n, m);
+        void *ht_mem_align;
+        v_zeros_align(&ht_mem_align, ht_size);
+        blasfeo_create_smat(n, m, &sHt, ht_mem_align);
+        blasfeo_pack_smat(n, m, (float*)Ht, n, &sHt, 0, 0);  // convert from column-major to BLASFEO smat
+
+        struct blasfeo_smat sx;
+        int x_size = blasfeo_memsize_smat(n, 1);
+        void *x_mem_align;
+        v_zeros_align(&x_mem_align, x_size);
+        blasfeo_create_smat(n, 1, &sx, x_mem_align);
+        blasfeo_pack_smat(n, 1, (float*)x, n, &sx, 0, 0);  // convert from column-major to BLASFEO smat
+
+        struct blasfeo_smat sP;
+        int p_size = blasfeo_memsize_smat(n, n);
+        void *p_mem_align;
+        v_zeros_align(&p_mem_align, p_size);
+        blasfeo_create_smat(n, n, &sP, p_mem_align);
+        blasfeo_pack_smat(n, n, (float*)P, n, &sP, 0, 0);  // convert from column-major to BLASFEO smat
+
+        struct blasfeo_smat sD;
+        int d_size = blasfeo_memsize_smat(n, m);
+        void *d_mem_align;
+        v_zeros_align(&d_mem_align, d_size);
+        blasfeo_create_smat(n, m, &sD, d_mem_align);
+
+        struct blasfeo_smat sL;
+        int l_size = blasfeo_memsize_smat(m, m);
+        void *l_mem_align;
+        v_zeros_align(&l_mem_align, l_size);
+        blasfeo_create_smat(m, m, &sL, l_mem_align);
+
+        struct blasfeo_smat sT;
+        int t_size = blasfeo_memsize_smat(m, m);
+        void *t_mem_align;
+        v_zeros_align(&t_mem_align, t_size);
+        blasfeo_create_smat(m, m, &sT, t_mem_align);
+
+        struct blasfeo_smat sE;
+        int e_size = blasfeo_memsize_smat(n, m);
+        void *e_mem_align;
+        v_zeros_align(&e_mem_align, e_size);
+        blasfeo_create_smat(n, m, &sE, e_mem_align);
+
+        struct blasfeo_smat sxnew;
+        int xnew_size = blasfeo_memsize_smat(n, 1);
+        void *xnew_mem_align;
+        v_zeros_align(&xnew_mem_align, xnew_size);
+        blasfeo_create_smat(n, 1, &sxnew, xnew_mem_align);
+
+        struct blasfeo_smat sPnew;
+        int pnew_size = blasfeo_memsize_smat(n, n);
+        void *pnew_mem_align;
+        v_zeros_align(&pnew_mem_align, pnew_size);
+        blasfeo_create_smat(n, n, &sPnew, pnew_mem_align);
+
+        kalman_takasu_blasfeo(&sx, &sP, &sdz, &sR, &sHt, &sD, &sL, &sT, &sE, &sxnew, &sPnew, 0.0f, NULL);
+
+        blasfeo_unpack_smat(4, 1, &sxnew, 0, 0, x, 4);
+        blasfeo_unpack_smat(4, 4, &sPnew, 0, 0, P, 4);
+
+        const float xexp[4]     = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
+        const float threshold   = 1.0e-04f;
+        const float Pexp[4 * 4] = {
+            0.0081f,  0.0000f,  0.0000f, 0.0000f, -0.0006f, 0.0063f,  0.0000f,  0.0000f,
+            -0.0056f, -0.0006f, 0.0081f, 0.0000f, -0.0021f, -0.0102f, -0.0021f, 0.0367f
+        }; /* upper triangular part is valid */
+        // matprint(x, 4, 1, "%6.3f", "x");
+        // matprint(P, 4, 4, "%6.3f", "P");
+        for (int i = 0; i < 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, x[i], xexp[i],
+                              "nav_kalman state vector calculation failed");
+        }
+        for (int i = 0; i < 4 * 4; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, P[i], Pexp[i],
+                              "nav_kalman covariance matrix calculation failed");
+        }
+        // FIXME free blasfeo matrices
+        printf("[x] Kalman Filter Update (kalman_takasu_blasfeo)\n");
     }
 }
 
