@@ -13,12 +13,11 @@ P = eye(3);
 x = [1e3; 2e3; 3e3 ];
 
 A = [1 0.5; 0 1];
-% A = eye(2);
 sigma = epsilon_R^2;
 R = A*(eye(2)*sigma^2)*A';
 
-S = H*P*H' + R
-fprintf('cond(S) = %.5e, rank(S) = %f\n', cond(S), rank(S));
+S = H*P*H' + R;
+fprintf("cond(H*P*H' + R) = %.5e, rank(S) = %f\n", cond(S), rank(S));
 
 ztrue = H*x;
 z = ztrue + A*randn(2,1)*sigma;
@@ -59,7 +58,7 @@ checkfilter(x_udu,     P_udu,     "UDU");
 end
 
 function [] = checkfilter(x, P, name)
-chatty = false;
+chatty = true;
 [healthy] = filterhealthy(x, P, chatty);
 if (healthy == false)
     fprintf(2, '[ ] Filter %s is not healthy\n', name);

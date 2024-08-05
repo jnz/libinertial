@@ -31,7 +31,7 @@ smallest_entry = min(diag(P));
 if (smallest_entry <= eps)
     healthy = false;
     if chatty
-        fprintf('Diagonal elements of P close to zero');
+        fprintf('Diagonal elements of P close or below zero\n');
     end
 end
 
