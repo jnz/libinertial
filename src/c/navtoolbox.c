@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "linalg.h"
+#include "blasmini.h"
 #include "navtoolbox.h"
 
 /******************************************************************************
@@ -156,7 +157,6 @@ int nav_kalman(float* x, float* P, const float* dz, const float* R, const float*
     /* FIXME check for P positive definite (symmetric is automatic)*/
     /* FIXME check for isfinite() in state vector */
 
-
     /* (*) If a Cholesky decomposition is found the trsm operations will succeed. */
 
     return 0;
@@ -170,7 +170,15 @@ int nav_kalman_udu_scalar(float* x, float* U, float* d, const float dz, const fl
     float alpha = R;
     float gamma = 1.0f / alpha;
 
-    matmul("T", "N", n, 1, n, 1.0f, U, H_line, 0.0f, a); // a = U'*H'
+    // matmul("T", "N", n, 1, n, 1.0f, U, H_line, 0.0f, a); 
+    {
+        // calculate: a = U'*H'
+        int   tmpone   = 1;
+        float tmpalpha = 1.0f;
+        memcpy(a, H_line, sizeof(a[0]) * n); // preload with H_line
+        strmm_("L", "U", "T", "N", &n, &tmpone, &tmpalpha, U, &n, a, &n);
+    }
+
     for (int j = 0; j < n; j++)
     {
         b[j] = d[j] * a[j]; // b = D*a = diag(d)*a

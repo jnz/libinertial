@@ -54,6 +54,9 @@ extern "C"
     int ssymm_(char* side, char* uplo, int* m, int* n, float* alpha, float* a, int* lda, float* b,
               int* ldb, float* beta, float* c__, int* ldc);
 
+    int strmm_(const char* side, const char* uplo, const char* transa, const char* diag, int* m,
+               int* n, float* alpha, float* a, int* lda, float* b, int* ldb);
+
 #ifdef __cplusplus
 }
 #endif
