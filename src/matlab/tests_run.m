@@ -1,45 +1,47 @@
-function [] = setuptest()
+function [] = tests_run()
+% TESTS Run tests on the MATLAB code
 
 rng(42);
 
-epsilon = 1e-3;
-epsilon_R = 1e-3;
+H = eye(6);
+H(1, 2) = 0.1;
+H(1, 3) = 0.1;
+H(1, 4) = -0.5;
 
-H = [ 1e2 1 1; 1e2 1 1+epsilon];
-fprintf('cond(H) = %.5e, rank(H) = %f\n', cond(H), rank(H));
+P = eye(6);
+x = [1e3; 2e3; 3e3; 0.1; -0.2; 0.3 ];
 
-P = eye(3);
-x = [1e3; 0; 1e-03 ];
-
-A = [1 0.5; 0 1];
-% A = eye(2);
-sigma = epsilon_R^2;
-R = A*(eye(2)*sigma^2)*A';
-
-S = H*P*H' + R
-fprintf('cond(S) = %.5e, rank(S) = %f\n', cond(S), rank(S));
+A = [    1.0 0.5 0.1 -0.5 0.1 0.2 ; ...
+         0.0 1.1 0.2 -0.3 0.2 0.3 ; ...
+         0.0 0.1 0.9 -0.4 0.1 0.2 ; ...
+         0.0 0.1 0.1  1.1 0.2 0.1 ; ...
+         0.0 0.2 0.2  0.1 0.9 0.2 ; ...
+         0.0 0.0 0.1  0.2 0.0 0.9];
+sigma = [5; 5; 10; 0.1; 0.1; 0.1];
+R = A*diag(sigma).^2*A';
 
 ztrue = H*x;
-z = ztrue + A*randn(2,1)*sigma;
+z = ztrue + A*randn(6,1).*sigma;
 
 dz = z - H*x;
 
-% Vanilla Test Numerical Stability
+% Vanilla Test
 
 [x_vanilla, P_vanilla ] = kalman_vanilla(x, P, dz, R, H);
 
-% Test Takasu Numerical Stability
+% Test Takasu
 
 [x_takasu, P_takasu ] = kalman_takasu(x, P, dz, R, H);
 
-% UDU Test Numerical Stability
+% UDU Test
 
 [U, d] = udu(P);
 
 [x_udu,U_udu,d_udu] = kalman_udu(z,R,H,x,U,d);
 P_udu = U_udu*diag(d_udu)*U_udu';
+P_udu = 0.5*(P_udu + P_udu');
 
-% Carlson Test Numerical Stability
+% Carlson Test
 
 Cxx_carlson = chol(P)';
 [x_carlson,Cxx_carlson] = kalman_carlson(z,R,H,x,Cxx_carlson);
