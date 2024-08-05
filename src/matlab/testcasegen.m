@@ -1,5 +1,6 @@
 function [] = testcasegen()
 
+kalman_takasu_test();
 kalman_udu_testcase();
 kalman_udu_robust_testcase();
 decorr_testcase();
@@ -7,6 +8,19 @@ kalman_takasu_robust();
 
 end
 
+function [] = kalman_takasu_test()
+
+R = eye(3)*0.25;
+dz = [0.2688; 0.9169; -1.1294];
+H = [8 1 6 1 ; 3 5 7 2; 4 9 2 3 ];
+x = ones(4,1);
+P = eye(4) * 0.04;
+[xnew, Pnew, chi2_takasu] = kalman_takasu(x, P, dz, R, H);
+
+xnew
+Pnew
+
+end
 
 function [] = kalman_udu_testcase()
 
