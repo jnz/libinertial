@@ -5,6 +5,8 @@
 #include "benchmark.h"
 #include "../navtoolbox.h"
 #include "../linalg.h"
+#include "../kalman_takasu.h"
+#include "../kalman_udu.h"
 #include "../../cpp/kalman_takasu_eigen.h"
 using namespace Eigen;
 
@@ -43,7 +45,7 @@ static int kalman_test1(void)
         dz[1] = z[1] - (x[1] + x[3]);
         dz[2] = z[2] - (x[2] + x[3]);
 
-        nav_kalman(x, P, dz, R, Ht, 4, 3, 0.0f, NULL);
+        kalman_takasu(x, P, dz, R, Ht, 4, 3, 0.0f, NULL);
 
         xr[0] = x[0];
         xr[1] = x[1];
@@ -96,7 +98,7 @@ static int kalman_test1_eigen(void)
         z(2) = distribution(generator) + bias;
 
         dz = z - H * x;
-        kalman_takasu<float, StateDim, MeasDim>(x, P, dz, R, H);
+        kalman_takasu_eigen<float, StateDim, MeasDim>(x, P, dz, R, H);
 
         xr[0] = x(0);
         xr[1] = x(1);
@@ -141,7 +143,7 @@ static int kalman_test1_udu(void)
         z[1] = distribution(generator) + bias;
         z[2] = distribution(generator) + bias;
 
-        nav_kalman_udu(x, U, d, z, R, Ht, 4, 3, 0.0, 0);
+        kalman_udu(x, U, d, z, R, Ht, 4, 3, 0.0, 0);
 
         xr[0] = x[0];
         xr[1] = x[1];

@@ -55,7 +55,7 @@
  * @return 0 on success, -1 on error.
  */
 template <typename Scalar, int StateDim, int MeasDim>
-int kalman_takasu(
+int kalman_takasu_eigen(
     Eigen::Matrix<Scalar, StateDim, 1>& x,
     Eigen::Matrix<Scalar, StateDim, StateDim>& P,
     const Eigen::Matrix<Scalar, MeasDim, 1>& dz,

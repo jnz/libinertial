@@ -18,6 +18,8 @@
 
 #include "linalg.h"
 #include "navtoolbox.h"
+#include "kalman_takasu.h"
+#include "kalman_udu.h"
 #include "benchmark/benchmark.h"
 
 /******************************************************************************
@@ -254,7 +256,7 @@ static void testnavtoolbox(void)
         const float Ht[4 * 3] = { 8, 1, 6, 1, 3, 5, 7, 2, 4, 9, 2, 3 };
         float       x[4]      = { 1, 1, 1, 1 };
         float       P[4 * 4]  = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
-        int         result    = nav_kalman(x, P, dz, R, Ht, 4, 3, 0.0f, NULL);
+        int         result    = kalman_takasu(x, P, dz, R, Ht, 4, 3, 0.0f, NULL);
         assert(result == 0);
         const float xexp[4]     = { 0.9064f, 0.9046f, 1.2017f, 0.9768f };
         const float threshold   = 1.0e-04f;
@@ -284,7 +286,7 @@ static void testnavtoolbox(void)
         float       x[4]      = { 1, 1, 1, 1 };
         float       P[4 * 4]  = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
         float       chi2;
-        int         result    = nav_kalman(x, P, dz, R, Ht, 4, 3, 7.8147f, &chi2);
+        int         result    = kalman_takasu(x, P, dz, R, Ht, 4, 3, 7.8147f, &chi2);
         assert(result == -2);
         const float xexp[4]     = { 1, 1, 1, 1 };
         float       Pexp[4 * 4] = { 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f, 0, 0, 0, 0, 0.04f };
@@ -316,7 +318,7 @@ static void testnavtoolbox(void)
         result = udu(P, U, d, 4);
         assert(result == 0);
 
-        result = nav_kalman_udu(x, U, d, z, R, Ht, 4, 3, 0.0f, 0);
+        result = kalman_udu(x, U, d, z, R, Ht, 4, 3, 0.0f, 0);
         assert(result == 0);
 
         const float xexp[4]     = { 0.906426012f, 0.904562052f, 1.201702724f, 0.976775052f };
@@ -399,7 +401,7 @@ static void testnavtoolbox(void)
 
         decorrelate(z, Ht, R, 2, 2);
         mateye(R, 2); // set R to eye(2)
-        result = nav_kalman_udu(x, U, d, z, R, Ht, 2, 2, chi2_threshold, 1);
+        result = kalman_udu(x, U, d, z, R, Ht, 2, 2, chi2_threshold, 1);
         assert(result == 0);
 
         const float x_robust_exp[] = { 9.918531929653216f, -5.068338573737113f };
