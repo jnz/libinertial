@@ -33,10 +33,10 @@ x = x + dx; % Update state vector, x is now the a posteriori state vec.
 if (Josephsform)
     W = eye(length(x)) - K*H;
     P = W*P*W' + K*R*K'; % Joseph's form
-    P = 0.5*(P+P');
 else
     P = (eye(length(x)) - K*H)*P; % a posteriori covariance matrix
 end
+P = 0.5*(P+P');
 
 % Optional chi2 test, see [1] section 8.3.1.2 "Detecting anomalous Sensor Data"
 chi2 = (dz'/S)*dz / length(dz);
