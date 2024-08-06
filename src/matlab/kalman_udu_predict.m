@@ -1,4 +1,4 @@
-function [x,U,D] = thornton(x,Phi,Uin,din,Gin,Q)
+function [x,U,d] = thornton(x,Phi,Uin,din,Gin,Q)
 % UDU' Bierman-Thornton Filter Temporal / Prediction Step.
 %
 %  Catherine Thornton's modified weighted Gram-Schmidt
@@ -6,7 +6,7 @@ function [x,U,D] = thornton(x,Phi,Uin,din,Gin,Q)
 %  the U-D factors of the covariance matrix
 %  of estimation uncertainty in Kalman filtering. Source: [1].
 %
-%  P^{+} = U*D*U' = Uin * diag(din) * Uin'
+%  P = U*D*U' = Uin * diag(din) * Uin'
 %
 % Inputs:
 %      x      - a posteriori state vector with size (n x 1)
@@ -38,8 +38,9 @@ function [x,U,D] = thornton(x,Phi,Uin,din,Gin,Q)
 x     = Phi*x;
 [n,r] = size(Gin);
 G     = Gin;       % move to internal array for destructive updates
-U     = eye(n);    % initialize lower triangular part of U
 PhiU  = Phi*Uin;   % rows of [PhiU,G] are to be orthogonalized
+U     = eye(n);    % initialize lower triangular part of U
+d     = din;
 for i=n:-1:1
     sigma = 0;
     for j=1:n
@@ -48,7 +49,7 @@ for i=n:-1:1
             sigma = sigma + G(i,j)^2 *Q(j,j);
         end;
     end;
-    D(i,i) = sigma
+    d(i) = sigma
     for j=1:i-1
         sigma = 0;
         for k=1:n
@@ -57,7 +58,7 @@ for i=n:-1:1
         for k=1:r
             sigma = sigma + G(i,k)*Q(k,k)*G(j,k);
         end
-        U(j,i) = sigma/D(i,i);
+        U(j,i) = sigma/d(i);
         for k=1:n
             PhiU(j,k) = PhiU(j,k) - U(j,i)*PhiU(i,k);
         end
