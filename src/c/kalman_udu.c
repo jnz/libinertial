@@ -117,7 +117,8 @@ int kalman_udu(float* x, float* U, float* d, const float* z, const float* R, con
             {
                 HPHT += tmp[j] * tmp[j] * d[j];
             }
-            s                               = HPHT + Rv;
+            s = HPHT + Rv;
+
             const float mahalanobis_dist_sq = dz * dz / s;
             if (mahalanobis_dist_sq > chi2_threshold) // potential outlier?
             {
