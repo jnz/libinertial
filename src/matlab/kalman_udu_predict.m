@@ -1,4 +1,4 @@
-function [x,U,d] = thornton(x,Phi,Uin,din,Gin,Q)
+function [x,U,d] = kalman_udu_predict(x,Phi,Uin,din,Gin,Q)
 % UDU' Bierman-Thornton Filter Temporal / Prediction Step.
 %
 %  Catherine Thornton's modified weighted Gram-Schmidt
@@ -35,12 +35,15 @@ function [x,U,d] = thornton(x,Phi,Uin,din,Gin,Q)
 %   1. Grewal, Weill, Andrews. "Global positioning systems, inertial
 %      navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
 
+isdiagonal = isequal(Q, diag(diag(Q)));
+assert(isdiagonal);
+
 x     = Phi*x;
 [n,r] = size(Gin);
 G     = Gin;       % move to internal array for destructive updates
 PhiU  = Phi*Uin;   % rows of [PhiU,G] are to be orthogonalized
 U     = eye(n);    % initialize lower triangular part of U
-d     = din;
+d     = din*0;
 for i=n:-1:1
     sigma = 0;
     for j=1:n

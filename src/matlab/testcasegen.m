@@ -7,6 +7,7 @@ kalman_udu_testcase();
 kalman_udu_robust_testcase();
 decorr_testcase();
 kalman_takasu_robust();
+thornton_test();
 
 end
 
@@ -120,6 +121,33 @@ P = eye(4) * 0.04;
 chi2_takasu
 
 fprintf('</kalman_takasu outlier test>\n');
+
+end
+
+
+function [] = thornton_test()
+
+    Q = diag([0.1 0.2]);
+
+    G = [1 0; 0 1; 0.5 0.5];
+
+    B = [1 0.1 -0.2; 0.1 1.1 0.2; 0 0.2 1.0];
+    P = B*eye(3)*B';
+
+    x = [1; 2; 3];
+
+    Phi = [1 0.5 0.25; 0 1 0.1; 0 0 1];
+
+    [U,d] = udu(P);
+
+    [x_exp,U_exp,d_exp] = kalman_udu_predict(x,Phi,U,d,G,Q);
+
+    x_ref = Phi*x;
+    P_ref = Phi*P*Phi' + G*Q*G';
+    [U_ref,d_ref] = udu(P_ref);
+    assert(max(max(abs(U_ref-U_exp))) < 1e-10);
+
+    k=0;
 
 end
 

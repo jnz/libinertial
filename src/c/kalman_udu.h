@@ -97,6 +97,48 @@ extern "C"
      */
     int decorrelate(float* z, float* Ht, float* R, int n, int m);
 
+    /** @brief UDU' (Thornton) Filter Temporal / Prediction Step
+     *
+     *  Catherine Thornton's modified weighted Gram-Schmidt orthogonalization
+     *  method for the predictor update of the U-D factors of the covariance matrix
+     *  of estimation uncertainty in Kalman filtering. Source: [1].
+     *
+     *  P = U*D*U' = Uin * diag(din) * Uin'
+     *
+     *  @param[in,out] x   (optional *) state vector with size (n x 1)
+     *  @param[in,out] U   unit upper triangular factor (U) of the modified Cholesky
+     *                     factors (U-D factors) of the covariance matrix of
+     *                     corrected state estimation uncertainty P^{+} (n x n).
+     *                     Updated in-place to the modified factors (U-D)
+     *                     of the covariance matrix of predicted state
+     *                     estimation uncertainty P^{-}, so that
+     *                     U*diag(d)*U' = P^{-} after this function.
+     *  @param[in,out] d   diagonal factor (d) vector (n x 1) of the U-D factors
+     *                     of the covariance matrix of corrected estimation
+     *                     uncertainty P^{+}, so that diag(d) = D.
+     *                     Updated in-place so that P^{-} = U*diag(d)*U'
+     *  @param[in] Phi     state transition matrix (n x n)
+     *  @param[in,out] G   process noise distribution matrix (modified, if necessary to
+     *                     make the associated process noise covariance diagonal) (n x r)
+     *  @param[in] Q       diagonal vector of covariance matrix of process noise
+     *                     in the stochastic system model (r x 1) (diag(Q) has size r x r)
+     *  @param[in] n       State vector size n.
+     *  @param[in] r       Process noise matrix size.
+     *
+     * (*) Optional, as a non-linear filter will do the prediction of the state vector
+     * with a dedicated (non-linear) function.
+     * This will basically just predict the state vector with:
+     *
+     *      x^{-} = Phi*x^{+}
+     *      P^{+} = Phi*P^{-}*Phi' + G*diag(Q)*G'
+     *
+     * References:
+     *  [1] Grewal, Weill, Andrews. "Global positioning systems, inertial
+     *      navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
+     */
+    void kalman_udu_predict(float* x, float* U, float* d, const float* Phi,
+                            const float* G, const float* Q, int n, int r);
+
 #ifdef __cplusplus
 }
 #endif

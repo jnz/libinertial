@@ -358,15 +358,15 @@ static void testnavtoolbox(void)
         for (int i = 0; i < 4; i++)
         {
             TEST_FLOAT_WITHIN(threshold, x[i], xexp[i],
-                              "nav_kalman_udu state vector calculation failed");
-            TEST_FLOAT_WITHIN(threshold, d[i], dexp[i], "nav_kalman_udu d[] calculation failed");
+                              "kalman_udu state vector calculation failed");
+            TEST_FLOAT_WITHIN(threshold, d[i], dexp[i], "kalman_udu d[] calculation failed");
         }
         for (int i = 0; i < 4 * 4; i++)
         {
             TEST_FLOAT_WITHIN(threshold, U[i], Uexp[i],
-                              "nav_kalman_udu U matrix calculation failed");
+                              "kalman_udu U matrix calculation failed");
         }
-        printf("[x] Kalman Filter Update (nav_kalman_udu)\n");
+        printf("[x] Kalman Filter Update (kalman_udu)\n");
     }
     // decorr Test
     {
@@ -423,16 +423,50 @@ static void testnavtoolbox(void)
         for (int i = 0; i < 2; i++)
         {
             TEST_FLOAT_WITHIN(threshold, x[i], x_robust_exp[i],
-                              "nav_kalman_udu robust state vector calculation failed");
+                              "kalman_udu robust state vector calculation failed");
             TEST_FLOAT_WITHIN(threshold, d[i], d_exp[i],
-                              "nav_kalman_udu robust d[] calculation failed");
+                              "kalman_udu robust d[] calculation failed");
         }
         for (int i = 0; i < 2 * 2; i++)
         {
             TEST_FLOAT_WITHIN(threshold, U[i], U_exp[i],
-                              "nav_kalman_udu robust U matrix calculation failed");
+                              "kalman_udu robust U matrix calculation failed");
         }
         printf("[x] Robust UDU Kalman Filter Test with Outlier\n");
+    }
+    // UDU Temporal Update Test (source: thornton_test())
+    {
+        const float Q[] = {0.1f, 0.2f};
+        const float G[] = {1, 0, 0.5f, 0, 1, 0.5f};
+        float x[] = {1, 2, 3};
+        const float Phi[] = { 1, 0, 0, 0.5, 1, 0, 0.25, 0.1, 1 };
+        float U[] = {1, 0, 0, 0.2226f, 1, 0, -0.1731f, 0.4038f, 1};
+        float d[] = { 0.9648f, 1.0904f, 1.0400f };
+        int n=3;
+        int r=2;
+
+        const float x_exp[] = { 2.7500f, 2.3000f, 3.0000 };
+        const float U_exp[] = {1, 0, 0, 0.6171f, 1, 0, 0.3049, 0.5596, 1};
+        const float d_exp[] = { 1.1524f, 1.2052f, 1.1150f };
+
+        kalman_udu_predict(x, U, d, Phi, G, Q, n, r);
+        matprint(x, n, 1, "%10.8f", "x predicted");
+        matprint(U, n, n, "%10.8f", "U predicted");
+        matprint(d, n, 1, "%10.8f", "d predicted");
+
+        const float threshold = 0.001f;
+        for (int i = 0; i < n; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, x[i], x_exp[i],
+                              "kalman_udu_predict x calculation failed");
+            TEST_FLOAT_WITHIN(threshold, d[i], d_exp[i],
+                              "kalman_udu_predict d calculation failed");
+        }
+        for (int i = 0; i < n * n; i++)
+        {
+            TEST_FLOAT_WITHIN(threshold, U[i], U_exp[i],
+                              "kalman_udu_predict U matrix calculation failed");
+        }
     }
 }
 

@@ -60,6 +60,7 @@ checkfilter(x_carlson, P_carlson, "Carlson");
 checkfilter(x_udu,     P_udu,     "UDU");
 
 robust_udu_test();
+thornton_test();
 
 end
 
@@ -105,4 +106,5 @@ assert(filterhealthy(x_robust,U_2*diag(d_2)*U_2'));
 assert(filterhealthy(x_robust_takasu,P_takasu));
 
 end
+
 

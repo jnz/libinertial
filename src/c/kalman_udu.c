@@ -18,6 +18,7 @@
 
 #include "linalg.h"
 #include "blasmini.h" /* strmm_ */
+#include "kalman_udu.h"
 
 /******************************************************************************
  * DEFINES
@@ -165,51 +166,12 @@ int decorrelate(float* z, float* Ht, float* R, int n, int m)
     return 0;
 }
 
-#if 0
-
-/** @brief UDU' (Thornton) Filter Temporal / Prediction Step
- *
- *  Catherine Thornton's modified weighted Gram-Schmidt orthogonalization
- *  method for the predictor update of the U-D factors of the covariance matrix
- *  of estimation uncertainty in Kalman filtering. Source: [1].
- *
- *  P = U*D*U' = Uin * diag(din) * Uin'
- *
- *  @param[in,out] x   (optional *) state vector with size (n x 1)
- *  @param[in,out] U   unit upper triangular factor (U) of the modified Cholesky
- *                     factors (U-D factors) of the covariance matrix of
- *                     corrected state estimation uncertainty P^{+} (n x n).
- *                     Updated in-place to the modified factors (U-D)
- *                     of the covariance matrix of predicted state
- *                     estimation uncertainty P^{-}, so that
- *                     U*diag(d)*U' = P^{-} after this function.
- *  @param[in,out] d   diagonal factor (d) vector (n x 1) of the U-D factors
- *                     of the covariance matrix of corrected estimation
- *                     uncertainty P^{+}, so that diag(d) = D.
- *                     Updated in-place so that P^{-} = U*diag(d)*U'
- *  @param[in] Phi     state transition matrix (n x n)
- *  @param[in,out] G   process noise distribution matrix (modified, if necessary to
- *                     make the associated process noise covariance diagonal) (n x r)
- *  @param[in] Q       diagonal covariance matrix of process noise
- *                     in the stochastic system model (r x r)
- *
- * (*) Optional, as a non-linear filter will do the prediction of the state vector
- * with a dedicated (non-linear) function.
- * This will basically just predict the state vector with:
- *
- *      x^{-} = Phi*x^{+}
- *      P^{+} = Phi*P^{-}*Phi' + G*Q*G'
- *
- * References:
- *  [1] Grewal, Weill, Andrews. "Global positioning systems, inertial
- *      navigation, and integration". 1st ed. John Wiley & Sons, New York, 2001.
-*/
-int kalman_udu_predict(float* x, float* U, float* d, const float* Phi, const float* Gin, const float* Q,
-                       int n, int r)
+void kalman_udu_predict(float* x, float* U, float* d, const float* Phi, const float* G, const float* Q,
+                        int n, int r)
 {
-    assert(n <=
     assert(r <= KALMAN_MAX_STATE_SIZE);
 
+    //  x = Phi*x;
     if (x)
     {
         float tmp[KALMAN_MAX_STATE_SIZE];
@@ -217,66 +179,64 @@ int kalman_udu_predict(float* x, float* U, float* d, const float* Phi, const flo
         matmul("N", "N", n, 1, n, 1.0f, Phi, tmp, 0.0f, x);
     }
 
-    float G[KALMAN_MAX_STATE_SIZE*KALMAN_MAX_STATE_SIZE];
-    memcpy(G, Gin, sizeof()*n*r);
+    // G_tmp = G; // move to internal array for destructive updates
+    float G_tmp[KALMAN_MAX_STATE_SIZE*KALMAN_MAX_STATE_SIZE];
+    memcpy(G_tmp, G, sizeof(G_tmp[0])*n*r);
 
-    // PhiU  = Phi*Uin;  rows of [PhiU,G] are to be orthogonalized
+    // PhiU  = Phi*U; // rows of [PhiU,G] are to be orthogonalized
     float PhiU[KALMAN_MAX_STATE_SIZE*KALMAN_MAX_STATE_SIZE];
     float tmpalpha = 1.0f;
     memcpy(PhiU, Phi, sizeof(Phi[0])*n*n);
-    strmm_("R", "U", "N", "U", &n, &n, &tmpalpha, Uin, &n, PhiU, &n);
+    strmm_("R", "U", "N", "U", &n, &n, &tmpalpha, U, &n, PhiU, &n);
 
     // U = eye(n)
     mateye(U, n);
 
+    // prepare new d vector
+    float dout[KALMAN_MAX_STATE_SIZE];
+    float sigma;
 
     for (int i = n-1; i >= 0; i--)
     {
-        float sigma = 0.0f;
+        sigma = 0.0f;
         for (int j=0;j<n;j++)
         {
             sigma += MAT_ELEM(PhiU, i, j, n, n) *
-                     MAT_ELEM(PhiU, i, j, n, n) * d
-
+                     MAT_ELEM(PhiU, i, j, n, n) * d[j];
+            if (j <= r)
+            {
+                sigma += MAT_ELEM(G_tmp, i, j, n, r) *
+                         MAT_ELEM(G_tmp, i, j, n, r) * Q[j];
+            }
         }
-
+        dout[i] = sigma;
+        for (int j=0;j<i-1;j++)
+        {
+            sigma = 0.0f;
+            for (int k=0;k<n;k++)
+            {
+                sigma += MAT_ELEM(PhiU, i, k, n, n) * d[k] *
+                         MAT_ELEM(PhiU, j, k, n, n);
+            }
+            for (int k=0;k<r;k++)
+            {
+                sigma += MAT_ELEM(G_tmp, i, k, n, r) *
+                         Q[k] *
+                         MAT_ELEM(G_tmp, j, k, n, r);
+            }
+            MAT_ELEM(U, j, i, n, n) = sigma / dout[i];
+            for (int k=0;k<n;k++)
+            {
+                MAT_ELEM(PhiU, j, k, n, n) -= MAT_ELEM(U, j, i, n, n)*MAT_ELEM(PhiU, i, k, n, n);
+            }
+            for (int k=0;k<r;k++)
+            {
+                MAT_ELEM(G_tmp, j, k, n, r) -= MAT_ELEM(U, j, i, n, n)*MAT_ELEM(G_tmp, i, k, n, r);
+            }
+        }
     }
 
-/*
-x     = Phi*x;
-[n,r] = size(Gin);
-G     = Gin;       % move to internal array for destructive updates
-PhiU  = Phi*Uin;   % rows of [PhiU,G] are to be orthogonalized
-U     = eye(n);    % initialize lower triangular part of U
-for i=n:-1:1
-    sigma = 0;
-    for j=1:n
-        sigma = sigma + PhiU(i,j)^2 *din(j);
-        if (j <= r)
-            sigma = sigma + G(i,j)^2 *Q(j,j);
-        end;
-    end;
-    D(i,i) = sigma
-    for j=1:i-1
-        sigma = 0;
-        for k=1:n
-            sigma = sigma + PhiU(i,k)*din(k)*PhiU(j,k);
-        end;
-        for k=1:r
-            sigma = sigma + G(i,k)*Q(k,k)*G(j,k);
-        end
-        U(j,i) = sigma/D(i,i);
-        for k=1:n
-            PhiU(j,k) = PhiU(j,k) - U(j,i)*PhiU(i,k);
-        end
-        for k=1:r
-            G(j,k) = G(j,k) - U(j,i)*G(i,k);
-        end
-    end
-end
-*/
-
+    memcpy(d, dout, sizeof(d[0])*n); // d = dout
 }
-#endif
 
 /* @} */
