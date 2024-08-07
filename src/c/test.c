@@ -213,6 +213,18 @@ static void testlinalg(void)
             TEST_FLOAT_WITHIN(threshold, d[i], dexp[i], "UDU: d test failed");
         }
     }
+    // Test magnetometer yaw
+    {
+        const float roll_rad         = DEG2RAD(45.0f);
+        const float pitch_rad        = DEG2RAD(70.0f);
+        const float yaw_expected_rad = DEG2RAD(170.0f);
+        const float mb[3]     = { 40.2481f, -27.63536f, -22.7238f };
+        const float yaw_rad = nav_mag_heading(mb, roll_rad, pitch_rad);
+        const float threshold = 0.001f;
+
+        TEST_FLOAT_WITHIN(threshold, yaw_rad, yaw_expected_rad, "Magnetometer heading test failed (nav_mag_heading)");
+        printf("[x] Yaw from magnetometer (nav_mag_heading)\n");
+    }
 }
 
 static void testnavtoolbox(void)
